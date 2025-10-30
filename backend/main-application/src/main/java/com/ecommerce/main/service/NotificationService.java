@@ -249,6 +249,77 @@ public class NotificationService {
     }
     
     /**
+     * Send a test notification for integration testing
+     */
+    public void sendTestNotification(String message) {
+        try {
+            NotificationMessage notification = new NotificationMessage(
+                "test_notification",
+                Map.of(
+                    "message", message,
+                    "timestamp", System.currentTimeMillis(),
+                    "type", "integration_test"
+                )
+            );
+
+            // Broadcast to all connected users
+            broadcastToAllUsers("test_notification", notification.getData());
+            
+            logger.info("Test notification sent: {}", message);
+        } catch (Exception e) {
+            logger.error("Failed to send test notification", e);
+        }
+    }
+
+    /**
+     * Send order status update for integration testing
+     */
+    public void sendOrderStatusUpdate(Long orderId, String status) {
+        try {
+            NotificationMessage notification = new NotificationMessage(
+                "order_status_update",
+                Map.of(
+                    "orderId", orderId,
+                    "status", status,
+                    "message", "Order status updated to " + status,
+                    "timestamp", System.currentTimeMillis()
+                )
+            );
+
+            // Broadcast to all users for testing
+            broadcastToAllUsers("order_status_update", notification.getData());
+            
+            logger.info("Order status update sent for order {}: {}", orderId, status);
+        } catch (Exception e) {
+            logger.error("Failed to send order status update for order {}", orderId, e);
+        }
+    }
+
+    /**
+     * Send inventory alert for integration testing
+     */
+    public void sendInventoryAlert(Long productId, String message) {
+        try {
+            NotificationMessage notification = new NotificationMessage(
+                "inventory_alert",
+                Map.of(
+                    "productId", productId,
+                    "message", message,
+                    "timestamp", System.currentTimeMillis(),
+                    "type", "low_stock"
+                )
+            );
+
+            // Send to all admin users
+            sendAdminNotification("inventory_alert", notification.getData());
+            
+            logger.info("Inventory alert sent for product {}: {}", productId, message);
+        } catch (Exception e) {
+            logger.error("Failed to send inventory alert for product {}", productId, e);
+        }
+    }
+
+    /**
      * Get connection statistics
      */
     public Map<String, Object> getConnectionStats() {

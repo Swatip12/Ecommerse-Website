@@ -1,0 +1,136 @@
+# Staging Docker Compose configuration
+version: '3.8'
+
+services:
+  # Nginx Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    container_name: ecommerce-nginx-staging
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - ./nginx/logs:/var/log/nginx
+      - ./frontend/dist:/usr/share/nginx/html:ro
+    depends_on:
+      - backend
+      - frontend
+    networks:
+      - ecommerce-staging-network
+    restart: unless-stopped
+
+  # MySQL Database
+  mysql:
+    image: mysql:8.0
+    container_name: ecommerce-mysql-staging
+    environment:
+      MYSQL_ROOT_PASSWORD: staging_root_password
+      MYSQL_DATABASE: ecommerce
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_staging_data:/var/lib/mysql
+      - ./database/init-scripts:/docker-entrypoint-initdb.d:ro
+    networks:
+      - ecommerce-staging-network
+    command: --default-authentication-plugin=mysql_native_password
+    restart: unless-stopped
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: ecommerce-redis-staging
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_staging_data:/data
+    networks:
+      - ecommerce-staging-network
+    command: redis-server --appendonly yes
+    restart: unless-stopped
+
+  # Spring Boot Backend
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.prod
+    container_name: ecommerce-backend-staging
+    environment:
+      - SPRING_PROFILES_ACTIVE=staging
+      - SPRING_DATASOURCE_USER_URL=jdbc:mysql://mysql:3306/ecommerce_users?useSSL=false&serverTimezone=UTC
+      - SPRING_DATASOURCE_PRODUCT_URL=jdbc:mysql://mysql:3306/ecommerce_products?useSSL=false&serverTimezone=UTC
+      - SPRING_DATASOURCE_ORDER_URL=jdbc:mysql://mysql:3306/ecommerce_orders?useSSL=false&serverTimezone=UTC
+      - SPRING_DATA_REDIS_HOST=redis
+      - SPRING_DATA_REDIS_PORT=6379
+      - JWT_SECRET=staging-jwt-secret-key-for-testing-purposes-only
+    depends_on:
+      - mysql
+      - redis
+    networks:
+      - ecommerce-staging-network
+    volumes:
+      - ./logs:/app/logs
+      - ./uploads:/app/uploads
+    restart: unless-stopped
+
+  # Angular Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
+      args:
+        - BUILD_CONFIGURATION=staging
+    container_name: ecommerce-frontend-staging
+    environment:
+      - NODE_ENV=staging
+    networks:
+      - ecommerce-staging-network
+    restart: unless-stopped
+
+  # Monitoring - Prometheus (optional for staging)
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: ecommerce-prometheus-staging
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_staging_data:/prometheus
+    networks:
+      - ecommerce-staging-network
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=72h'
+      - '--web.enable-lifecycle'
+    restart: unless-stopped
+
+  # Database management
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: ecommerce-phpmyadmin-staging
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      PMA_USER: root
+      PMA_PASSWORD: staging_root_password
+    ports:
+      - "8081:80"
+    depends_on:
+      - mysql
+    networks:
+      - ecommerce-staging-network
+
+volumes:
+  mysql_staging_data:
+    driver: local
+  redis_staging_data:
+    driver: local
+  prometheus_staging_data:
+    driver: local
+
+networks:
+  ecommerce-staging-network:
+    driver: bridge

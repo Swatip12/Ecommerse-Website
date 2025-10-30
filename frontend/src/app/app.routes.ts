@@ -57,6 +57,11 @@ export const routes: Routes = [
     canActivate: [AuthGuard]
   },
   {
+    path: 'integration-test',
+    loadComponent: () => import('./integration-test.component').then(m => m.IntegrationTestComponent),
+    canActivate: [AuthGuard]
+  },
+  {
     path: 'unauthorized',
     loadComponent: () => import('./shared/components/unauthorized/unauthorized.component').then(m => m.UnauthorizedComponent)
   },

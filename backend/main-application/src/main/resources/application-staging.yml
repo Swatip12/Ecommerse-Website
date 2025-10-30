@@ -1,0 +1,173 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: ecommerce-backend-staging
+  
+  # Staging database configurations
+  datasource:
+    user:
+      url: ${SPRING_DATASOURCE_USER_URL}
+      username: user_service
+      password: staging_user_password
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      hikari:
+        maximum-pool-size: 20
+        minimum-idle: 5
+        idle-timeout: 300000
+        max-lifetime: 1200000
+        connection-timeout: 20000
+        validation-timeout: 3000
+        leak-detection-threshold: 60000
+        pool-name: UserServiceHikariCP-Staging
+    product:
+      url: ${SPRING_DATASOURCE_PRODUCT_URL}
+      username: product_service
+      password: staging_product_password
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      hikari:
+        maximum-pool-size: 25
+        minimum-idle: 8
+        idle-timeout: 300000
+        max-lifetime: 1200000
+        connection-timeout: 20000
+        validation-timeout: 3000
+        leak-detection-threshold: 60000
+        pool-name: ProductServiceHikariCP-Staging
+    order:
+      url: ${SPRING_DATASOURCE_ORDER_URL}
+      username: order_service
+      password: staging_order_password
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      hikari:
+        maximum-pool-size: 20
+        minimum-idle: 5
+        idle-timeout: 300000
+        max-lifetime: 1200000
+        connection-timeout: 20000
+        validation-timeout: 3000
+        leak-detection-threshold: 60000
+        pool-name: OrderServiceHikariCP-Staging
+  
+  # JPA staging configuration
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        format_sql: true
+        # Performance optimizations
+        jdbc:
+          batch_size: 25
+          batch_versioned_data: true
+        order_inserts: true
+        order_updates: true
+        # Query optimization
+        query:
+          plan_cache_max_size: 2048
+          in_clause_parameter_padding: true
+        # Connection provider settings
+        connection:
+          provider_disables_autocommit: true
+        # Second level cache
+        cache:
+          use_second_level_cache: false
+          use_query_cache: false
+  
+  # Redis staging configuration
+  data:
+    redis:
+      host: ${SPRING_DATA_REDIS_HOST}
+      port: ${SPRING_DATA_REDIS_PORT}
+      password: 
+      timeout: 2000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+  
+  # Session configuration
+  session:
+    store-type: redis
+    redis:
+      namespace: ecommerce:session:staging
+    timeout: 30m
+  
+  # Cache configuration
+  cache:
+    type: redis
+    redis:
+      time-to-live: 600000 # 10 minutes
+      cache-null-values: false
+
+# JWT staging configuration
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: 86400000 # 24 hours
+  refresh-expiration: 604800000 # 7 days
+
+# CORS staging configuration
+cors:
+  allowed-origins: https://staging.yourdomain.com,http://localhost:4200
+  allowed-methods: GET,POST,PUT,DELETE,OPTIONS
+  allowed-headers: "*"
+  allow-credentials: true
+
+# WebSocket staging configuration
+websocket:
+  allowed-origins: https://staging.yourdomain.com,http://localhost:4200
+
+# Staging logging configuration
+logging:
+  level:
+    com.ecommerce: DEBUG
+    org.springframework.security: INFO
+    org.springframework.web: INFO
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: /app/logs/ecommerce-backend-staging.log
+    max-size: 50MB
+    max-history: 10
+    total-size-cap: 1GB
+
+# Management endpoints for staging
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus,env,configprops
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: always
+      probes:
+        enabled: true
+    metrics:
+      enabled: true
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+# Security configuration (relaxed for staging)
+security:
+  require-ssl: false
+  headers:
+    frame-options: SAMEORIGIN
+    content-type-options: nosniff
+    xss-protection: 1; mode=block
+
+# File upload configuration
+file:
+  upload:
+    max-size: 10MB
+    allowed-types: image/jpeg,image/png,image/gif,image/webp
+    path: /app/uploads

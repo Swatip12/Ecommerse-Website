@@ -1,0 +1,63 @@
+# Production multi-stage build for Spring Boot application
+FROM maven:3.9.4-openjdk-17 AS build
+
+WORKDIR /app
+
+# Copy pom files for dependency resolution
+COPY pom.xml .
+COPY common/pom.xml common/
+COPY user-service/pom.xml user-service/
+COPY product-service/pom.xml product-service/
+COPY order-service/pom.xml order-service/
+COPY main-application/pom.xml main-application/
+
+# Download dependencies (cached layer)
+RUN mvn dependency:go-offline -B
+
+# Copy source code
+COPY common/src common/src
+COPY user-service/src user-service/src
+COPY product-service/src product-service/src
+COPY order-service/src order-service/src
+COPY main-application/src main-application/src
+
+# Build the application with production profile
+RUN mvn clean package -DskipTests -Pprod
+
+# Production runtime stage
+FROM openjdk:17-jre-slim
+
+# Install curl for health checks and security updates
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends curl ca-certificates && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Create necessary directories
+RUN mkdir -p /app/logs /app/uploads /app/temp
+
+# Create non-root user for security
+RUN addgroup --system --gid 1001 spring && \
+    adduser --system --uid 1001 --gid 1001 spring
+
+# Copy the built jar
+COPY --from=build /app/main-application/target/*.jar app.jar
+
+# Set proper ownership
+RUN chown -R spring:spring /app
+
+# Switch to non-root user
+USER spring:spring
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=90s --retries=3 \
+  CMD curl -f http://localhost:8080/actuator/health || exit 1
+
+# JVM optimization for production
+ENV JAVA_OPTS="-Xms1g -Xmx2g -XX:+UseG1GC -XX:G1HeapRegionSize=16m -XX:+UseStringDeduplication -XX:+OptimizeStringConcat -XX:+UseCompressedOops -Djava.security.egd=file:/dev/./urandom"
+
+EXPOSE 8080
+
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]

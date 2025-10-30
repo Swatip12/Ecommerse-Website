@@ -1,0 +1,103 @@
+[mysqld]
+# Basic settings
+user = mysql
+pid-file = /var/run/mysqld/mysqld.pid
+socket = /var/run/mysqld/mysqld.sock
+port = 3306
+basedir = /usr
+datadir = /var/lib/mysql
+tmpdir = /tmp
+lc-messages-dir = /usr/share/mysql
+
+# Character set and collation
+character-set-server = utf8mb4
+collation-server = utf8mb4_unicode_ci
+init-connect = 'SET NAMES utf8mb4'
+
+# Connection settings
+max_connections = 200
+max_connect_errors = 1000
+connect_timeout = 10
+wait_timeout = 28800
+interactive_timeout = 28800
+
+# Buffer settings for performance
+innodb_buffer_pool_size = 1G
+innodb_buffer_pool_instances = 4
+innodb_log_file_size = 256M
+innodb_log_buffer_size = 16M
+innodb_flush_log_at_trx_commit = 2
+innodb_flush_method = O_DIRECT
+
+# Query cache (disabled in MySQL 8.0, but keeping for reference)
+# query_cache_type = 1
+# query_cache_size = 128M
+# query_cache_limit = 2M
+
+# Table cache
+table_open_cache = 2000
+table_definition_cache = 1400
+
+# Thread settings
+thread_cache_size = 50
+thread_stack = 256K
+
+# MyISAM settings
+key_buffer_size = 128M
+myisam_sort_buffer_size = 64M
+
+# Temporary table settings
+tmp_table_size = 64M
+max_heap_table_size = 64M
+
+# Sort and group settings
+sort_buffer_size = 2M
+read_buffer_size = 1M
+read_rnd_buffer_size = 4M
+join_buffer_size = 2M
+
+# Binary logging for replication and point-in-time recovery
+log-bin = mysql-bin
+binlog_format = ROW
+expire_logs_days = 7
+max_binlog_size = 100M
+sync_binlog = 1
+
+# Error logging
+log-error = /var/log/mysql/error.log
+
+# Slow query logging
+slow_query_log = 1
+slow_query_log_file = /var/log/mysql/slow.log
+long_query_time = 2
+log_queries_not_using_indexes = 1
+
+# General logging (disable in production for performance)
+general_log = 0
+
+# InnoDB settings for ACID compliance and performance
+innodb_file_per_table = 1
+innodb_open_files = 300
+innodb_io_capacity = 400
+innodb_read_io_threads = 4
+innodb_write_io_threads = 4
+innodb_thread_concurrency = 0
+innodb_lock_wait_timeout = 50
+innodb_rollback_on_timeout = 1
+
+# Security settings
+skip-name-resolve
+local-infile = 0
+
+# SSL settings (if certificates are provided)
+# ssl-ca = /etc/mysql/ssl/ca-cert.pem
+# ssl-cert = /etc/mysql/ssl/server-cert.pem
+# ssl-key = /etc/mysql/ssl/server-key.pem
+
+[mysql]
+default-character-set = utf8mb4
+
+[client]
+default-character-set = utf8mb4
+port = 3306
+socket = /var/run/mysqld/mysqld.sock

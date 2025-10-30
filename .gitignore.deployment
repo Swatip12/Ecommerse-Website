@@ -1,0 +1,46 @@
+# Deployment-specific .gitignore additions
+# Add these entries to your main .gitignore file
+
+# Secrets and sensitive configuration
+secrets/*.txt
+!secrets/.gitkeep
+
+# SSL certificates
+nginx/ssl/*.pem
+nginx/ssl/*.key
+nginx/ssl/*.crt
+!nginx/ssl/.gitkeep
+
+# Logs
+logs/*.log
+nginx/logs/*.log
+mysql/logs/*.log
+redis/logs/*.log
+
+# Uploads
+uploads/*
+!uploads/.gitkeep
+
+# Docker volumes data
+mysql_*_data/
+redis_*_data/
+prometheus_data/
+grafana_data/
+elasticsearch_data/
+
+# Environment-specific overrides
+docker-compose.override.yml
+.env.local
+.env.production.local
+.env.staging.local
+
+# Backup files
+*.sql
+*.dump
+backup/
+
+# Temporary files
+*.tmp
+*.temp
+.DS_Store
+Thumbs.db

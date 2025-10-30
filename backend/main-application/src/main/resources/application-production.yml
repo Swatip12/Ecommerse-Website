@@ -1,0 +1,200 @@
+server:
+  port: 8080
+  # Production server configuration
+  tomcat:
+    max-threads: 200
+    min-spare-threads: 10
+    max-connections: 8192
+    accept-count: 100
+    connection-timeout: 20000
+  compression:
+    enabled: true
+    mime-types: text/html,text/xml,text/plain,text/css,text/javascript,application/javascript,application/json
+    min-response-size: 1024
+
+spring:
+  application:
+    name: ecommerce-backend
+  
+  # Production database configurations
+  datasource:
+    user:
+      url: ${SPRING_DATASOURCE_USER_URL}
+      username: user_service
+      password: ${MYSQL_USER_PASSWORD}
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      hikari:
+        maximum-pool-size: 30
+        minimum-idle: 10
+        idle-timeout: 300000
+        max-lifetime: 1200000
+        connection-timeout: 20000
+        validation-timeout: 3000
+        leak-detection-threshold: 60000
+        pool-name: UserServiceHikariCP-Prod
+        connection-test-query: SELECT 1
+    product:
+      url: ${SPRING_DATASOURCE_PRODUCT_URL}
+      username: product_service
+      password: ${MYSQL_PRODUCT_PASSWORD}
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      hikari:
+        maximum-pool-size: 40
+        minimum-idle: 15
+        idle-timeout: 300000
+        max-lifetime: 1200000
+        connection-timeout: 20000
+        validation-timeout: 3000
+        leak-detection-threshold: 60000
+        pool-name: ProductServiceHikariCP-Prod
+        connection-test-query: SELECT 1
+    order:
+      url: ${SPRING_DATASOURCE_ORDER_URL}
+      username: order_service
+      password: ${MYSQL_ORDER_PASSWORD}
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      hikari:
+        maximum-pool-size: 35
+        minimum-idle: 12
+        idle-timeout: 300000
+        max-lifetime: 1200000
+        connection-timeout: 20000
+        validation-timeout: 3000
+        leak-detection-threshold: 60000
+        pool-name: OrderServiceHikariCP-Prod
+        connection-test-query: SELECT 1
+  
+  # JPA production configuration
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        format_sql: false
+        # Performance optimizations
+        jdbc:
+          batch_size: 50
+          batch_versioned_data: true
+        order_inserts: true
+        order_updates: true
+        # Query optimization
+        query:
+          plan_cache_max_size: 4096
+          in_clause_parameter_padding: true
+        # Connection provider settings
+        connection:
+          provider_disables_autocommit: true
+        # Second level cache
+        cache:
+          use_second_level_cache: true
+          use_query_cache: true
+          region:
+            factory_class: org.hibernate.cache.jcache.JCacheRegionFactory
+  
+  # Redis production configuration
+  data:
+    redis:
+      host: ${SPRING_DATA_REDIS_HOST}
+      port: ${SPRING_DATA_REDIS_PORT}
+      password: ${REDIS_PASSWORD:}
+      timeout: 2000ms
+      lettuce:
+        pool:
+          max-active: 16
+          max-idle: 16
+          min-idle: 4
+          max-wait: 2000ms
+        shutdown-timeout: 100ms
+  
+  # Session configuration
+  session:
+    store-type: redis
+    redis:
+      namespace: ecommerce:session:prod
+    timeout: 30m
+  
+  # Cache configuration
+  cache:
+    type: redis
+    redis:
+      time-to-live: 3600000 # 1 hour
+      cache-null-values: false
+
+# JWT production configuration
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: 86400000 # 24 hours
+  refresh-expiration: 604800000 # 7 days
+
+# CORS production configuration
+cors:
+  allowed-origins: https://yourdomain.com,https://www.yourdomain.com
+  allowed-methods: GET,POST,PUT,DELETE,OPTIONS
+  allowed-headers: "*"
+  allow-credentials: true
+
+# WebSocket production configuration
+websocket:
+  allowed-origins: https://yourdomain.com,https://www.yourdomain.com
+
+# Production logging configuration
+logging:
+  level:
+    com.ecommerce: INFO
+    org.springframework.security: WARN
+    org.springframework.web: WARN
+    org.hibernate.SQL: WARN
+    org.hibernate.type.descriptor.sql.BasicBinder: WARN
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: /app/logs/ecommerce-backend.log
+    max-size: 100MB
+    max-history: 30
+    total-size-cap: 3GB
+
+# Management endpoints for production
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: when-authorized
+      probes:
+        enabled: true
+    metrics:
+      enabled: true
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+      percentiles:
+        http.server.requests: 0.5, 0.95, 0.99
+      sla:
+        http.server.requests: 100ms, 500ms, 1s
+
+# Security configuration
+security:
+  require-ssl: true
+  headers:
+    frame-options: DENY
+    content-type-options: nosniff
+    xss-protection: 1; mode=block
+    referrer-policy: strict-origin-when-cross-origin
+    content-security-policy: "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' wss: https:;"
+
+# File upload configuration
+file:
+  upload:
+    max-size: 10MB
+    allowed-types: image/jpeg,image/png,image/gif,image/webp
+    path: /app/uploads

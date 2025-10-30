@@ -25,6 +25,9 @@ import { ErrorHandlerService } from './services/error-handler.service';
 import { FormValidationService } from './services/form-validation.service';
 import { SecurityService } from './services/security.service';
 
+// E2E testing services
+import { E2EWorkflowService } from './services/e2e-workflow.service';
+
 // Components
 import { NotificationPanelComponent } from './components/notification-panel/notification-panel.component';
 
@@ -67,7 +70,8 @@ import { NotificationPanelComponent } from './components/notification-panel/noti
     RealTimeIntegrationService,
     ErrorHandlerService,
     FormValidationService,
-    SecurityService
+    SecurityService,
+    E2EWorkflowService
   ]
 })
 export class SharedModule { }
