@@ -18,6 +18,13 @@ import { RealTimeConnectionService } from './services/realtime-connection.servic
 import { NotificationDisplayService } from './services/notification-display.service';
 import { RealTimeIntegrationService } from './services/realtime-integration.service';
 
+// Error handling services
+import { ErrorHandlerService } from './services/error-handler.service';
+
+// Validation and security services
+import { FormValidationService } from './services/form-validation.service';
+import { SecurityService } from './services/security.service';
+
 // Components
 import { NotificationPanelComponent } from './components/notification-panel/notification-panel.component';
 
@@ -57,7 +64,10 @@ import { NotificationPanelComponent } from './components/notification-panel/noti
     WebSocketService,
     RealTimeConnectionService,
     NotificationDisplayService,
-    RealTimeIntegrationService
+    RealTimeIntegrationService,
+    ErrorHandlerService,
+    FormValidationService,
+    SecurityService
   ]
 })
 export class SharedModule { }

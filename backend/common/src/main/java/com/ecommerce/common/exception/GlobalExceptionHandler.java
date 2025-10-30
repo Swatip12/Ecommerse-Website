@@ -1,4 +1,4 @@
-package com.ecommerce.product.exception;
+package com.ecommerce.common.exception;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
