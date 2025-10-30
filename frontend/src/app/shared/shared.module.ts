@@ -8,6 +8,18 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatListModule } from '@angular/material/list';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatBadgeModule } from '@angular/material/badge';
+
+// Real-time services
+import { NotificationService } from './services/notification.service';
+import { WebSocketService } from './services/websocket.service';
+import { RealTimeConnectionService } from './services/realtime-connection.service';
+import { NotificationDisplayService } from './services/notification-display.service';
+import { RealTimeIntegrationService } from './services/realtime-integration.service';
+
+// Components
+import { NotificationPanelComponent } from './components/notification-panel/notification-panel.component';
 
 @NgModule({
   imports: [
@@ -20,7 +32,10 @@ import { MatListModule } from '@angular/material/list';
     MatIconModule,
     MatToolbarModule,
     MatSidenavModule,
-    MatListModule
+    MatListModule,
+    MatSnackBarModule,
+    MatBadgeModule,
+    NotificationPanelComponent
   ],
   exports: [
     CommonModule,
@@ -32,7 +47,17 @@ import { MatListModule } from '@angular/material/list';
     MatIconModule,
     MatToolbarModule,
     MatSidenavModule,
-    MatListModule
+    MatListModule,
+    MatSnackBarModule,
+    MatBadgeModule,
+    NotificationPanelComponent
+  ],
+  providers: [
+    NotificationService,
+    WebSocketService,
+    RealTimeConnectionService,
+    NotificationDisplayService,
+    RealTimeIntegrationService
   ]
 })
 export class SharedModule { }
