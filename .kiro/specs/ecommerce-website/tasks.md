@@ -43,20 +43,32 @@
     - Add order status tracking and audit fields
     - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 3.1, 3.2, 3.3, 3.4, 3.5, 6.1, 6.2, 6.3, 6.4, 6.5_
 
-- [ ] 3. Implement authentication and security infrastructure
-  - [ ] 3.1 Create JWT-based authentication system
+- [x] 3. Implement authentication and security infrastructure
+
+
+
+
+
+  - [x] 3.1 Create JWT-based authentication system
+
+
     - Implement UserService with registration and login functionality
     - Create JWT token generation and validation utilities
     - Add password hashing with BCrypt
     - _Requirements: 7.1, 7.2, 7.3_
   
-  - [ ] 3.2 Implement role-based authorization
+
+
+  - [x] 3.2 Implement role-based authorization
+
     - Create security configuration with role-based access control
     - Implement method-level security for admin endpoints
     - Add CORS configuration for Angular frontend
+
     - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5, 6.1, 6.2, 6.3, 6.4, 6.5_
   
-  - [ ] 3.3 Create Angular authentication services and guards
+  - [x] 3.3 Create Angular authentication services and guards
+
     - Implement AuthService with login/logout functionality
     - Create JWT interceptor for automatic token attachment
     - Add route guards for protected pages
