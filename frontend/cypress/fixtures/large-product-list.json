@@ -1,0 +1,53 @@
+{
+  "content": [
+    {
+      "id": 1,
+      "sku": "PROD-001",
+      "name": "Gaming Laptop Pro",
+      "description": "High-performance gaming laptop",
+      "price": 1299.99,
+      "category": { "id": 1, "name": "Electronics" },
+      "brand": "TechBrand",
+      "imageUrl": "/images/laptop-1.jpg",
+      "isActive": true,
+      "quantityAvailable": 15,
+      "isInStock": true,
+      "isLowStock": false
+    },
+    {
+      "id": 2,
+      "sku": "PROD-002",
+      "name": "Wireless Headphones",
+      "description": "Premium wireless headphones",
+      "price": 199.99,
+      "category": { "id": 1, "name": "Electronics" },
+      "brand": "AudioTech",
+      "imageUrl": "/images/headphones-1.jpg",
+      "isActive": true,
+      "quantityAvailable": 25,
+      "isInStock": true,
+      "isLowStock": false
+    },
+    {
+      "id": 3,
+      "sku": "PROD-003",
+      "name": "Smartphone X",
+      "description": "Latest smartphone with advanced features",
+      "price": 899.99,
+      "category": { "id": 1, "name": "Electronics" },
+      "brand": "MobileTech",
+      "imageUrl": "/images/phone-1.jpg",
+      "isActive": true,
+      "quantityAvailable": 8,
+      "isInStock": true,
+      "isLowStock": true
+    }
+  ],
+  "totalElements": 100,
+  "totalPages": 10,
+  "number": 0,
+  "size": 10,
+  "first": true,
+  "last": false,
+  "numberOfElements": 10
+}
