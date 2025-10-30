@@ -6,6 +6,8 @@ import { ProductDetailComponent } from './components/product-detail/product-deta
 import { CategoryNavigationComponent } from './components/category-navigation/category-navigation.component';
 import { ProductSearchComponent } from './components/product-search/product-search.component';
 import { ProductCatalogComponent } from './components/product-catalog/product-catalog.component';
+import { ProductFilterComponent } from './components/product-filter/product-filter.component';
+import { ProductGridComponent } from './components/product-grid/product-grid.component';
 
 const routes: Routes = [
   {
@@ -35,7 +37,9 @@ const routes: Routes = [
     ProductDetailComponent,
     CategoryNavigationComponent,
     ProductSearchComponent,
-    ProductCatalogComponent
+    ProductCatalogComponent,
+    ProductFilterComponent,
+    ProductGridComponent
   ],
   exports: [
     // Export components for use in other modules
@@ -43,7 +47,9 @@ const routes: Routes = [
     ProductDetailComponent,
     CategoryNavigationComponent,
     ProductSearchComponent,
-    ProductCatalogComponent
+    ProductCatalogComponent,
+    ProductFilterComponent,
+    ProductGridComponent
   ]
 })
 export class ProductModule { }

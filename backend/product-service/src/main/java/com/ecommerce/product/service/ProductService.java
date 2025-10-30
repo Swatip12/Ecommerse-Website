@@ -10,6 +10,7 @@ import com.ecommerce.product.repository.CategoryRepository;
 import com.ecommerce.product.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -139,8 +140,22 @@ public class ProductService {
                     pageable
             );
         } else if (searchRequest.hasSearchTerm()) {
-            // Simple text search
-            products = productRepository.findBySearchTermAndIsActiveTrue(searchRequest.getSearchTerm(), pageable);
+            // Use relevance-based search for better ranking
+            if ("relevance".equals(searchRequest.getSortBy())) {
+                // Use relevance-based search with custom sorting
+                Pageable relevancePageable = PageRequest.of(searchRequest.getPage(), searchRequest.getSize());
+                Page<Object[]> relevanceResults = productRepository.findBySearchTermWithRelevance(searchRequest.getSearchTerm(), relevancePageable);
+                
+                // Convert Object[] results to Product objects
+                List<Product> productList = relevanceResults.getContent().stream()
+                    .map(result -> (Product) result[0])
+                    .collect(Collectors.toList());
+                
+                products = new PageImpl<>(productList, relevancePageable, relevanceResults.getTotalElements());
+            } else {
+                // Simple text search with standard sorting
+                products = productRepository.findBySearchTermAndIsActiveTrue(searchRequest.getSearchTerm(), pageable);
+            }
         } else if (searchRequest.hasCategoryFilter() && searchRequest.getCategoryIds().size() == 1) {
             // Single category filter
             products = productRepository.findByCategoryIdAndIsActiveTrue(searchRequest.getCategoryIds().get(0), pageable);
@@ -344,6 +359,57 @@ public class ProductService {
         return value;
     }
     
+    /**
+     * Get search suggestions based on partial search term
+     */
+    @Transactional(readOnly = true)
+    public com.ecommerce.product.dto.SearchSuggestionResponse getSearchSuggestions(String searchTerm) {
+        if (searchTerm == null || searchTerm.trim().length() < 2) {
+            // Return popular searches if search term is too short
+            List<Object[]> popularResults = productRepository.findPopularProductNames();
+            List<String> popularSearches = popularResults.stream()
+                .map(result -> (String) result[0])
+                .collect(Collectors.toList());
+            
+            return new com.ecommerce.product.dto.SearchSuggestionResponse(
+                List.of(), List.of(), List.of(), popularSearches
+            );
+        }
+        
+        String trimmedTerm = searchTerm.trim();
+        
+        // Get product name suggestions
+        List<String> productSuggestions = productRepository.findProductNameSuggestions(trimmedTerm);
+        
+        // Get brand suggestions
+        List<String> brandSuggestions = productRepository.findBrandSuggestions(trimmedTerm);
+        
+        // Get category suggestions
+        List<String> categorySuggestions = productRepository.findCategorySuggestions(trimmedTerm);
+        
+        // Get popular searches as fallback
+        List<Object[]> popularResults = productRepository.findPopularProductNames();
+        List<String> popularSearches = popularResults.stream()
+            .map(result -> (String) result[0])
+            .limit(5)
+            .collect(Collectors.toList());
+        
+        return new com.ecommerce.product.dto.SearchSuggestionResponse(
+            productSuggestions, brandSuggestions, categorySuggestions, popularSearches
+        );
+    }
+    
+    /**
+     * Get popular search terms
+     */
+    @Transactional(readOnly = true)
+    public List<String> getPopularSearchTerms() {
+        List<Object[]> popularResults = productRepository.findPopularProductNames();
+        return popularResults.stream()
+            .map(result -> (String) result[0])
+            .collect(Collectors.toList());
+    }
+
     private boolean hasComplexFilters(ProductSearchRequest searchRequest) {
         return searchRequest.hasSearchTerm() || 
                searchRequest.hasCategoryFilter() || 

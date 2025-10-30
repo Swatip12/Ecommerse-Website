@@ -271,46 +271,42 @@ export class ProductSearchComponent implements OnInit, OnDestroy {
       searchTerm: searchTerm,
       page: 0,
       size: this.maxResults + 1, // Get one extra to check if there are more results
-      sortBy: 'name',
-      sortDirection: 'asc'
+      sortBy: 'relevance', // Use relevance-based sorting for better results
+      sortDirection: 'desc'
     };
 
-    return this.productService.searchProducts(searchRequest).pipe(
+    // Perform both product search and get suggestions in parallel
+    const productSearch$ = this.productService.searchProducts(searchRequest);
+    const suggestions$ = this.productService.getSearchSuggestions(searchTerm);
+
+    return productSearch$.pipe(
       switchMap(response => {
         const products = response.content;
         const hasMore = products.length > this.maxResults;
         const limitedProducts = hasMore ? products.slice(0, this.maxResults) : products;
         
-        // Generate search suggestions based on search term
-        const suggestions = this.generateSearchSuggestions(searchTerm);
-        
-        return of({
-          products: limitedProducts,
-          suggestions: suggestions,
-          hasMore: hasMore,
-          totalResults: response.totalElements
-        });
+        return suggestions$.pipe(
+          switchMap(suggestionsResponse => {
+            // Combine all suggestion types into a single array
+            const allSuggestions = [
+              ...suggestionsResponse.productSuggestions,
+              ...suggestionsResponse.brandSuggestions,
+              ...suggestionsResponse.categorySuggestions
+            ].slice(0, 5); // Limit to 5 suggestions
+            
+            return of({
+              products: limitedProducts,
+              suggestions: allSuggestions,
+              hasMore: hasMore,
+              totalResults: response.totalElements
+            });
+          })
+        );
       })
     );
   }
 
-  private generateSearchSuggestions(searchTerm: string): string[] {
-    // Simple suggestion generation - in a real app, this would come from the backend
-    const suggestions: string[] = [];
-    const term = searchTerm.toLowerCase();
-    
-    // Add some common search variations
-    if (term.length >= 2) {
-      suggestions.push(
-        `${searchTerm} deals`,
-        `${searchTerm} sale`,
-        `best ${searchTerm}`,
-        `${searchTerm} reviews`
-      );
-    }
-    
-    return suggestions.slice(0, 3);
-  }
+
 
   private handleSearchResults(results: any): void {
     this.searchResults = results.products || [];
@@ -357,14 +353,24 @@ export class ProductSearchComponent implements OnInit, OnDestroy {
   private loadPopularSearches(): void {
     if (!this.showPopularSearches) return;
     
-    // Mock popular searches - in a real app, this would come from the backend
-    this.popularSearches = [
-      'laptop',
-      'smartphone',
-      'headphones',
-      'gaming',
-      'books'
-    ];
+    this.productService.getPopularSearchTerms().pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
+      next: (popularTerms) => {
+        this.popularSearches = popularTerms.slice(0, 5); // Limit to 5 popular searches
+      },
+      error: (error) => {
+        console.error('Error loading popular searches:', error);
+        // Fallback to default popular searches
+        this.popularSearches = [
+          'laptop',
+          'smartphone',
+          'headphones',
+          'gaming',
+          'books'
+        ];
+      }
+    });
   }
 
   onSearchFocus(): void {

@@ -8,7 +8,8 @@ import {
   ProductSearchResponse, 
   Category, 
   PriceRange, 
-  ProductRequest 
+  ProductRequest,
+  SearchSuggestionResponse 
 } from '../models/product.models';
 
 @Injectable({
@@ -224,6 +225,18 @@ export class ProductService {
 
   getCurrentPriceRange(): PriceRange | null {
     return this.priceRangeSubject.value;
+  }
+
+  // Search suggestions and autocomplete
+  getSearchSuggestions(searchTerm?: string): Observable<SearchSuggestionResponse> {
+    const params = searchTerm ? new HttpParams().set('q', searchTerm) : new HttpParams();
+    return this.http.get<SearchSuggestionResponse>(`${this.API_URL}/search/suggestions`, { params })
+      .pipe(catchError(this.handleError));
+  }
+
+  getPopularSearchTerms(): Observable<string[]> {
+    return this.http.get<string[]>(`${this.API_URL}/search/popular`)
+      .pipe(catchError(this.handleError));
   }
 
   private handleError(error: HttpErrorResponse): Observable<never> {

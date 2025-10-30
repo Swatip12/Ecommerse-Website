@@ -37,7 +37,26 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
                                                   @Param("maxPrice") BigDecimal maxPrice, 
                                                   Pageable pageable);
     
-    // Full-text search
+    // Full-text search with relevance scoring
+    @Query("SELECT p, " +
+           "CASE " +
+           "  WHEN MATCH(p.name, p.description) AGAINST(:searchTerm IN NATURAL LANGUAGE MODE) > 0 " +
+           "    THEN MATCH(p.name, p.description) AGAINST(:searchTerm IN NATURAL LANGUAGE MODE) " +
+           "  WHEN LOWER(p.name) LIKE LOWER(CONCAT('%', :searchTerm, '%')) " +
+           "    THEN 0.8 " +
+           "  WHEN LOWER(p.description) LIKE LOWER(CONCAT('%', :searchTerm, '%')) " +
+           "    THEN 0.5 " +
+           "  ELSE 0.1 " +
+           "END as relevance " +
+           "FROM Product p WHERE " +
+           "(MATCH(p.name, p.description) AGAINST(:searchTerm IN NATURAL LANGUAGE MODE) " +
+           "OR LOWER(p.name) LIKE LOWER(CONCAT('%', :searchTerm, '%')) " +
+           "OR LOWER(p.description) LIKE LOWER(CONCAT('%', :searchTerm, '%'))) " +
+           "AND p.isActive = true " +
+           "ORDER BY relevance DESC")
+    Page<Object[]> findBySearchTermWithRelevance(@Param("searchTerm") String searchTerm, Pageable pageable);
+    
+    // Simple full-text search (for backward compatibility)
     @Query("SELECT p FROM Product p WHERE " +
            "(MATCH(p.name, p.description) AGAINST(:searchTerm IN NATURAL LANGUAGE MODE) " +
            "OR LOWER(p.name) LIKE LOWER(CONCAT('%', :searchTerm, '%')) " +
@@ -135,6 +154,39 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     List<Product> findByCategoryIdIn(List<Long> categoryIds);
     
     List<Product> findByIsActive(Boolean isActive);
+    
+    // Search suggestions and autocomplete
+    @Query("SELECT DISTINCT p.name FROM Product p WHERE " +
+           "LOWER(p.name) LIKE LOWER(CONCAT(:searchTerm, '%')) " +
+           "AND p.isActive = true " +
+           "ORDER BY p.name " +
+           "LIMIT 10")
+    List<String> findProductNameSuggestions(@Param("searchTerm") String searchTerm);
+    
+    @Query("SELECT DISTINCT p.brand FROM Product p WHERE " +
+           "LOWER(p.brand) LIKE LOWER(CONCAT(:searchTerm, '%')) " +
+           "AND p.brand IS NOT NULL " +
+           "AND p.isActive = true " +
+           "ORDER BY p.brand " +
+           "LIMIT 5")
+    List<String> findBrandSuggestions(@Param("searchTerm") String searchTerm);
+    
+    @Query("SELECT DISTINCT c.name FROM Category c " +
+           "JOIN Product p ON p.category.id = c.id " +
+           "WHERE LOWER(c.name) LIKE LOWER(CONCAT(:searchTerm, '%')) " +
+           "AND c.isActive = true " +
+           "AND p.isActive = true " +
+           "ORDER BY c.name " +
+           "LIMIT 5")
+    List<String> findCategorySuggestions(@Param("searchTerm") String searchTerm);
+    
+    // Popular search terms (based on product names and categories)
+    @Query("SELECT p.name, COUNT(*) as frequency FROM Product p " +
+           "WHERE p.isActive = true " +
+           "GROUP BY p.name " +
+           "ORDER BY frequency DESC " +
+           "LIMIT 10")
+    List<Object[]> findPopularProductNames();
     
     // Analytics methods
     Long countByIsActive(Boolean isActive);

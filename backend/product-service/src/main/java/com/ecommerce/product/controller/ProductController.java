@@ -275,6 +275,25 @@ public class ProductController {
     }
     
     /**
+     * Get search suggestions for autocomplete
+     */
+    @GetMapping("/search/suggestions")
+    public ResponseEntity<com.ecommerce.product.dto.SearchSuggestionResponse> getSearchSuggestions(
+            @RequestParam(required = false) String q) {
+        com.ecommerce.product.dto.SearchSuggestionResponse suggestions = productService.getSearchSuggestions(q);
+        return ResponseEntity.ok(suggestions);
+    }
+    
+    /**
+     * Get popular search terms
+     */
+    @GetMapping("/search/popular")
+    public ResponseEntity<List<String>> getPopularSearchTerms() {
+        List<String> popularTerms = productService.getPopularSearchTerms();
+        return ResponseEntity.ok(popularTerms);
+    }
+
+    /**
      * Export products to CSV
      */
     @GetMapping("/export/csv")

@@ -2,19 +2,21 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
-import { Product } from '../../models/product.models';
-import { ProductListComponent } from '../product-list/product-list.component';
+import { Product, ProductSearchRequest } from '../../models/product.models';
+import { ProductGridComponent } from '../product-grid/product-grid.component';
 import { ProductSearchComponent } from '../product-search/product-search.component';
 import { CategoryNavigationComponent } from '../category-navigation/category-navigation.component';
+import { ProductFilterComponent } from '../product-filter/product-filter.component';
 
 @Component({
   selector: 'app-product-catalog',
   standalone: true,
   imports: [
     CommonModule,
-    ProductListComponent,
+    ProductGridComponent,
     ProductSearchComponent,
-    CategoryNavigationComponent
+    CategoryNavigationComponent,
+    ProductFilterComponent
   ],
   template: `
     <div class="product-catalog-container">
@@ -42,8 +44,17 @@ import { CategoryNavigationComponent } from '../category-navigation/category-nav
 
       <!-- Main Content -->
       <div class="catalog-content">
-        <!-- Sidebar with Category Navigation -->
+        <!-- Sidebar with Filters -->
         <aside class="catalog-sidebar">
+          <!-- Product Filters -->
+          <app-product-filter
+            [initialFilters]="currentFilters"
+            [isMobile]="false"
+            (filtersChanged)="onFiltersChanged($event)"
+            (filtersApplied)="onFiltersApplied($event)"
+          ></app-product-filter>
+          
+          <!-- Category Navigation -->
           <app-category-navigation
             [selectedCategoryId]="selectedCategoryId"
             [showProductCounts]="true"
@@ -74,15 +85,16 @@ import { CategoryNavigationComponent } from '../category-navigation/category-nav
             </div>
           </div>
 
-          <!-- Product List -->
-          <app-product-list
-            [showFilters]="true"
-            [categoryId]="selectedCategoryId"
-            [searchTerm]="currentSearchTerm"
+          <!-- Product Grid -->
+          <app-product-grid
+            [filters]="currentFilters"
             [pageSize]="20"
             (productSelected)="onProductSelected($event)"
             (addToCart)="onAddToCart($event)"
-          ></app-product-list>
+            (addToWishlist)="onAddToWishlist($event)"
+            (quickView)="onQuickView($event)"
+            (filtersCleared)="onFiltersCleared()"
+          ></app-product-grid>
         </main>
       </div>
 
@@ -107,6 +119,7 @@ export class ProductCatalogComponent implements OnInit, OnDestroy {
   selectedCategoryId: number | null = null;
   selectedCategoryName: string | null = null;
   currentSearchTerm: string | null = null;
+  currentFilters: ProductSearchRequest = {};
   showMobileSidebar = false;
 
   private destroy$ = new Subject<void>();
@@ -183,6 +196,45 @@ export class ProductCatalogComponent implements OnInit, OnDestroy {
     
     // Show success message or notification
     // This would typically integrate with a cart service
+  }
+
+  onAddToWishlist(product: Product): void {
+    // TODO: Implement add to wishlist functionality
+    console.log('Adding to wishlist:', product.name);
+  }
+
+  onQuickView(product: Product): void {
+    // TODO: Implement quick view functionality
+    console.log('Quick view:', product.name);
+  }
+
+  onFiltersCleared(): void {
+    this.clearAllFilters();
+  }
+
+  onFiltersChanged(filters: ProductSearchRequest): void {
+    this.currentFilters = filters;
+    this.updateViewFromFilters(filters);
+  }
+
+  onFiltersApplied(filters: ProductSearchRequest): void {
+    this.currentFilters = filters;
+    this.updateViewFromFilters(filters);
+  }
+
+  private updateViewFromFilters(filters: ProductSearchRequest): void {
+    // Update current state based on filters
+    this.currentSearchTerm = filters.searchTerm || null;
+    
+    // If category filter is applied, update selected category
+    if (filters.categoryIds && filters.categoryIds.length > 0) {
+      this.selectedCategoryId = filters.categoryIds[0];
+    } else {
+      this.selectedCategoryId = null;
+    }
+    
+    // The URL is already updated by the filter component
+    // The product list component will react to the filter changes
   }
 
   clearAllFilters(): void {

@@ -103,3 +103,16 @@ export enum SortDirection {
   ASC = 'asc',
   DESC = 'desc'
 }
+
+export interface SearchSuggestionResponse {
+  productSuggestions: string[];
+  brandSuggestions: string[];
+  categorySuggestions: string[];
+  popularSearches: string[];
+}
+
+export interface SearchSuggestion {
+  text: string;
+  type: 'product' | 'brand' | 'category' | 'popular';
+  icon?: string;
+}
