@@ -13,20 +13,31 @@
   - Configure development environment with Docker Compose
   - _Requirements: All requirements depend on proper project setup_
 
-- [ ] 2. Implement core database schema and entities
-  - [ ] 2.1 Create User domain database schema and JPA entities
+- [x] 2. Implement core database schema and entities
+
+
+
+
+
+  - [x] 2.1 Create User domain database schema and JPA entities
+
+
     - Implement Users table with authentication fields
     - Create UserAddresses table for shipping/billing addresses
     - Write JPA entities with proper relationships and validation
     - _Requirements: 7.1, 7.2, 7.3, 7.4, 7.5_
   
-  - [ ] 2.2 Create Product domain database schema and JPA entities
+  - [x] 2.2 Create Product domain database schema and JPA entities
+
+
     - Implement Categories, Products, ProductInventory, and ProductImages tables
     - Write JPA entities with proper indexing for search and performance
     - Add full-text search capabilities for product search
     - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5, 5.1, 5.2, 5.3, 5.4, 5.5_
   
-  - [ ] 2.3 Create Order domain database schema and JPA entities
+
+  - [x] 2.3 Create Order domain database schema and JPA entities
+
     - Implement Orders, OrderItems, and ShoppingCart tables
     - Write JPA entities with proper relationships and constraints
     - Add order status tracking and audit fields
