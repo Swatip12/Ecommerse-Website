@@ -1,0 +1,449 @@
+<div class="checkout-container">
+  <div class="checkout-header">
+    <h1 class="checkout-title">Checkout</h1>
+    
+    <!-- Progress Steps -->
+    <div class="progress-steps">
+      <div class="step" [class.active]="currentStep >= 1" [class.completed]="currentStep > 1">
+        <div class="step-number">1</div>
+        <div class="step-label">Shipping</div>
+      </div>
+      <div class="step-divider"></div>
+      <div class="step" [class.active]="currentStep >= 2" [class.completed]="currentStep > 2">
+        <div class="step-number">2</div>
+        <div class="step-label">Payment</div>
+      </div>
+      <div class="step-divider"></div>
+      <div class="step" [class.active]="currentStep >= 3" [class.completed]="currentStep > 3">
+        <div class="step-number">3</div>
+        <div class="step-label">Review</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Error Messages -->
+  <div class="error-messages" *ngIf="errors.length > 0">
+    <div class="error-item" *ngFor="let error of errors">
+      {{ error }}
+    </div>
+  </div>
+
+  <form [formGroup]="checkoutForm" (ngSubmit)="submitOrder()">
+    <div class="checkout-content">
+      
+      <!-- Step 1: Shipping Address -->
+      <div class="checkout-step" *ngIf="currentStep === 1">
+        <h2>Shipping Address</h2>
+        
+        <!-- Saved Addresses -->
+        <div class="saved-addresses" *ngIf="savedAddresses.length > 0">
+          <h3>Saved Addresses</h3>
+          <div class="address-grid">
+            <div class="address-card" 
+                 *ngFor="let address of savedAddresses"
+                 (click)="selectSavedAddress(address, 'shipping')">
+              <div class="address-content">
+                <div class="address-line">{{ address.streetAddress }}</div>
+                <div class="address-line">{{ address.city }}, {{ address.state }} {{ address.postalCode }}</div>
+                <div class="address-line">{{ address.country }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Shipping Address Form -->
+        <div class="address-form" formGroupName="shippingAddress">
+          <div class="form-row">
+            <div class="form-field full-width">
+              <label for="shippingStreet">Street Address *</label>
+              <input 
+                id="shippingStreet"
+                type="text" 
+                formControlName="streetAddress"
+                [class.error]="isFieldInvalid('shippingAddress.streetAddress')"
+                placeholder="Enter your street address">
+              <div class="field-error" *ngIf="isFieldInvalid('shippingAddress.streetAddress')">
+                {{ getFieldError('shippingAddress.streetAddress') }}
+              </div>
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-field">
+              <label for="shippingCity">City *</label>
+              <input 
+                id="shippingCity"
+                type="text" 
+                formControlName="city"
+                [class.error]="isFieldInvalid('shippingAddress.city')"
+                placeholder="City">
+              <div class="field-error" *ngIf="isFieldInvalid('shippingAddress.city')">
+                {{ getFieldError('shippingAddress.city') }}
+              </div>
+            </div>
+            
+            <div class="form-field">
+              <label for="shippingState">State *</label>
+              <input 
+                id="shippingState"
+                type="text" 
+                formControlName="state"
+                [class.error]="isFieldInvalid('shippingAddress.state')"
+                placeholder="State">
+              <div class="field-error" *ngIf="isFieldInvalid('shippingAddress.state')">
+                {{ getFieldError('shippingAddress.state') }}
+              </div>
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-field">
+              <label for="shippingPostal">Postal Code *</label>
+              <input 
+                id="shippingPostal"
+                type="text" 
+                formControlName="postalCode"
+                [class.error]="isFieldInvalid('shippingAddress.postalCode')"
+                placeholder="Postal Code">
+              <div class="field-error" *ngIf="isFieldInvalid('shippingAddress.postalCode')">
+                {{ getFieldError('shippingAddress.postalCode') }}
+              </div>
+            </div>
+            
+            <div class="form-field">
+              <label for="shippingCountry">Country *</label>
+              <select 
+                id="shippingCountry"
+                formControlName="country"
+                [class.error]="isFieldInvalid('shippingAddress.country')">
+                <option value="United States">United States</option>
+                <option value="Canada">Canada</option>
+                <!-- Add more countries as needed -->
+              </select>
+              <div class="field-error" *ngIf="isFieldInvalid('shippingAddress.country')">
+                {{ getFieldError('shippingAddress.country') }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2: Payment Method -->
+      <div class="checkout-step" *ngIf="currentStep === 2">
+        <h2>Payment Method</h2>
+        
+        <!-- Payment Method Selection -->
+        <div class="payment-methods" formGroupName="paymentMethod">
+          <div class="payment-method-grid">
+            <label class="payment-method-option" *ngFor="let method of paymentMethods">
+              <input 
+                type="radio" 
+                [value]="method.value" 
+                formControlName="type">
+              <div class="payment-method-content">
+                <i class="material-icons">{{ method.icon }}</i>
+                <span>{{ method.label }}</span>
+              </div>
+            </label>
+          </div>
+
+          <!-- Credit/Debit Card Form -->
+          <div class="card-form" *ngIf="checkoutForm.get('paymentMethod.type')?.value === 'CREDIT_CARD' || checkoutForm.get('paymentMethod.type')?.value === 'DEBIT_CARD'">
+            <div class="form-row">
+              <div class="form-field full-width">
+                <label for="cardNumber">Card Number *</label>
+                <input 
+                  id="cardNumber"
+                  type="text" 
+                  formControlName="cardNumber"
+                  [class.error]="isFieldInvalid('paymentMethod.cardNumber')"
+                  placeholder="1234 5678 9012 3456"
+                  maxlength="16">
+                <div class="field-error" *ngIf="isFieldInvalid('paymentMethod.cardNumber')">
+                  {{ getFieldError('paymentMethod.cardNumber') }}
+                </div>
+              </div>
+            </div>
+            
+            <div class="form-row">
+              <div class="form-field">
+                <label for="cardholderName">Cardholder Name *</label>
+                <input 
+                  id="cardholderName"
+                  type="text" 
+                  formControlName="cardholderName"
+                  [class.error]="isFieldInvalid('paymentMethod.cardholderName')"
+                  placeholder="John Doe">
+                <div class="field-error" *ngIf="isFieldInvalid('paymentMethod.cardholderName')">
+                  {{ getFieldError('paymentMethod.cardholderName') }}
+                </div>
+              </div>
+            </div>
+            
+            <div class="form-row">
+              <div class="form-field">
+                <label for="expiryMonth">Expiry Month *</label>
+                <select 
+                  id="expiryMonth"
+                  formControlName="expiryMonth"
+                  [class.error]="isFieldInvalid('paymentMethod.expiryMonth')">
+                  <option value="">Month</option>
+                  <option *ngFor="let month of [1,2,3,4,5,6,7,8,9,10,11,12]" [value]="month">
+                    {{ month.toString().padStart(2, '0') }}
+                  </option>
+                </select>
+                <div class="field-error" *ngIf="isFieldInvalid('paymentMethod.expiryMonth')">
+                  {{ getFieldError('paymentMethod.expiryMonth') }}
+                </div>
+              </div>
+              
+              <div class="form-field">
+                <label for="expiryYear">Expiry Year *</label>
+                <select 
+                  id="expiryYear"
+                  formControlName="expiryYear"
+                  [class.error]="isFieldInvalid('paymentMethod.expiryYear')">
+                  <option value="">Year</option>
+                  <option *ngFor="let year of getYearOptions()" [value]="year">{{ year }}</option>
+                </select>
+                <div class="field-error" *ngIf="isFieldInvalid('paymentMethod.expiryYear')">
+                  {{ getFieldError('paymentMethod.expiryYear') }}
+                </div>
+              </div>
+              
+              <div class="form-field">
+                <label for="cvv">CVV *</label>
+                <input 
+                  id="cvv"
+                  type="text" 
+                  formControlName="cvv"
+                  [class.error]="isFieldInvalid('paymentMethod.cvv')"
+                  placeholder="123"
+                  maxlength="4">
+                <div class="field-error" *ngIf="isFieldInvalid('paymentMethod.cvv')">
+                  {{ getFieldError('paymentMethod.cvv') }}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- PayPal Form -->
+          <div class="paypal-form" *ngIf="checkoutForm.get('paymentMethod.type')?.value === 'PAYPAL'">
+            <div class="form-row">
+              <div class="form-field full-width">
+                <label for="paypalEmail">PayPal Email *</label>
+                <input 
+                  id="paypalEmail"
+                  type="email" 
+                  formControlName="paypalEmail"
+                  [class.error]="isFieldInvalid('paymentMethod.paypalEmail')"
+                  placeholder="your@email.com">
+                <div class="field-error" *ngIf="isFieldInvalid('paymentMethod.paypalEmail')">
+                  {{ getFieldError('paymentMethod.paypalEmail') }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Billing Address -->
+        <div class="billing-address-section">
+          <div class="billing-checkbox">
+            <label>
+              <input 
+                type="checkbox" 
+                formControlName="useShippingForBilling">
+              <span>Use shipping address for billing</span>
+            </label>
+          </div>
+
+          <div class="billing-address-form" *ngIf="!useShippingForBilling" formGroupName="billingAddress">
+            <h3>Billing Address</h3>
+            
+            <div class="form-row">
+              <div class="form-field full-width">
+                <label for="billingStreet">Street Address *</label>
+                <input 
+                  id="billingStreet"
+                  type="text" 
+                  formControlName="streetAddress"
+                  [class.error]="isFieldInvalid('billingAddress.streetAddress')"
+                  placeholder="Enter billing address">
+                <div class="field-error" *ngIf="isFieldInvalid('billingAddress.streetAddress')">
+                  {{ getFieldError('billingAddress.streetAddress') }}
+                </div>
+              </div>
+            </div>
+            
+            <div class="form-row">
+              <div class="form-field">
+                <label for="billingCity">City *</label>
+                <input 
+                  id="billingCity"
+                  type="text" 
+                  formControlName="city"
+                  [class.error]="isFieldInvalid('billingAddress.city')"
+                  placeholder="City">
+                <div class="field-error" *ngIf="isFieldInvalid('billingAddress.city')">
+                  {{ getFieldError('billingAddress.city') }}
+                </div>
+              </div>
+              
+              <div class="form-field">
+                <label for="billingState">State *</label>
+                <input 
+                  id="billingState"
+                  type="text" 
+                  formControlName="state"
+                  [class.error]="isFieldInvalid('billingAddress.state')"
+                  placeholder="State">
+                <div class="field-error" *ngIf="isFieldInvalid('billingAddress.state')">
+                  {{ getFieldError('billingAddress.state') }}
+                </div>
+              </div>
+            </div>
+            
+            <div class="form-row">
+              <div class="form-field">
+                <label for="billingPostal">Postal Code *</label>
+                <input 
+                  id="billingPostal"
+                  type="text" 
+                  formControlName="postalCode"
+                  [class.error]="isFieldInvalid('billingAddress.postalCode')"
+                  placeholder="Postal Code">
+                <div class="field-error" *ngIf="isFieldInvalid('billingAddress.postalCode')">
+                  {{ getFieldError('billingAddress.postalCode') }}
+                </div>
+              </div>
+              
+              <div class="form-field">
+                <label for="billingCountry">Country *</label>
+                <select 
+                  id="billingCountry"
+                  formControlName="country"
+                  [class.error]="isFieldInvalid('billingAddress.country')">
+                  <option value="United States">United States</option>
+                  <option value="Canada">Canada</option>
+                </select>
+                <div class="field-error" *ngIf="isFieldInvalid('billingAddress.country')">
+                  {{ getFieldError('billingAddress.country') }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 3: Review Order -->
+      <div class="checkout-step" *ngIf="currentStep === 3">
+        <h2>Review Your Order</h2>
+        
+        <!-- Order Items -->
+        <div class="order-items">
+          <h3>Items ({{ orderSummary.itemCount }})</h3>
+          <div class="item-list">
+            <div class="order-item" *ngFor="let item of cartItems">
+              <div class="item-image">
+                <img [src]="item.imageUrl || '/assets/images/product-placeholder.png'" 
+                     [alt]="item.productName">
+              </div>
+              <div class="item-details">
+                <div class="item-name">{{ item.productName }}</div>
+                <div class="item-sku">SKU: {{ item.productSku }}</div>
+                <div class="item-quantity">Qty: {{ item.quantity }}</div>
+              </div>
+              <div class="item-price">
+                {{ formatCurrency(item.unitPrice * item.quantity) }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Order Notes -->
+        <div class="order-notes">
+          <label for="orderNotes">Order Notes (Optional)</label>
+          <textarea 
+            id="orderNotes"
+            formControlName="notes"
+            placeholder="Any special instructions for your order..."
+            rows="3"></textarea>
+        </div>
+
+        <!-- Order Summary -->
+        <div class="order-summary-review">
+          <h3>Order Summary</h3>
+          <div class="summary-line">
+            <span>Subtotal:</span>
+            <span>{{ formatCurrency(orderSummary.subtotal) }}</span>
+          </div>
+          <div class="summary-line">
+            <span>Tax:</span>
+            <span>{{ formatCurrency(orderSummary.taxAmount) }}</span>
+          </div>
+          <div class="summary-line">
+            <span>Shipping:</span>
+            <span>{{ orderSummary.shippingAmount === 0 ? 'FREE' : formatCurrency(orderSummary.shippingAmount) }}</span>
+          </div>
+          <div class="summary-line total">
+            <span>Total:</span>
+            <span>{{ formatCurrency(orderSummary.totalAmount) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Order Summary Sidebar -->
+      <div class="order-summary-sidebar">
+        <h3>Order Summary</h3>
+        <div class="summary-content">
+          <div class="summary-line">
+            <span>Items ({{ orderSummary.itemCount }}):</span>
+            <span>{{ formatCurrency(orderSummary.subtotal) }}</span>
+          </div>
+          <div class="summary-line">
+            <span>Tax:</span>
+            <span>{{ formatCurrency(orderSummary.taxAmount) }}</span>
+          </div>
+          <div class="summary-line">
+            <span>Shipping:</span>
+            <span>{{ orderSummary.shippingAmount === 0 ? 'FREE' : formatCurrency(orderSummary.shippingAmount) }}</span>
+          </div>
+          <div class="summary-divider"></div>
+          <div class="summary-line total">
+            <span>Total:</span>
+            <span>{{ formatCurrency(orderSummary.totalAmount) }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation Buttons -->
+    <div class="checkout-navigation">
+      <button 
+        type="button" 
+        class="btn btn-secondary" 
+        *ngIf="currentStep > 1"
+        (click)="previousStep()">
+        Previous
+      </button>
+      
+      <button 
+        type="button" 
+        class="btn btn-primary" 
+        *ngIf="currentStep < totalSteps"
+        (click)="nextStep()"
+        [disabled]="!isStepValid(currentStep)">
+        Next
+      </button>
+      
+      <button 
+        type="submit" 
+        class="btn btn-primary btn-place-order" 
+        *ngIf="currentStep === totalSteps"
+        [disabled]="!checkoutForm.valid || isProcessingOrder">
+        <span *ngIf="!isProcessingOrder">Place Order</span>
+        <span *ngIf="isProcessingOrder">Processing...</span>
+      </button>
+    </div>
+  </form>
+</div>

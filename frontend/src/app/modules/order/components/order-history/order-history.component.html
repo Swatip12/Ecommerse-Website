@@ -1,0 +1,189 @@
+<div class="order-history-container">
+  <div class="page-header">
+    <h1>My Orders</h1>
+    <p>View and manage your order history</p>
+  </div>
+
+  <!-- Filters and Search -->
+  <div class="filters-section">
+    <div class="filter-controls">
+      <div class="filter-group">
+        <label for="statusFilter">Filter by Status:</label>
+        <select id="statusFilter" [formControl]="statusFilter" class="filter-select">
+          <option *ngFor="let option of statusOptions" [value]="option.value">
+            {{ option.label }}
+          </option>
+        </select>
+      </div>
+      
+      <div class="filter-group">
+        <label for="searchOrders">Search Orders:</label>
+        <input 
+          id="searchOrders"
+          type="text" 
+          [formControl]="searchControl"
+          placeholder="Search by order number..."
+          class="search-input">
+      </div>
+      
+      <button class="refresh-btn" (click)="refresh()" [disabled]="isLoading">
+        <i class="material-icons">refresh</i>
+        Refresh
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading-state" *ngIf="isLoading">
+    <div class="loading-spinner"></div>
+    <p>Loading your orders...</p>
+  </div>
+
+  <!-- Error State -->
+  <div class="error-state" *ngIf="error && !isLoading">
+    <div class="error-icon">
+      <i class="material-icons">error_outline</i>
+    </div>
+    <p>{{ error }}</p>
+    <button class="btn btn-primary" (click)="refresh()">Try Again</button>
+  </div>
+
+  <!-- Empty State -->
+  <div class="empty-state" *ngIf="!isLoading && !error && orders.length === 0">
+    <div class="empty-icon">
+      <i class="material-icons">shopping_bag</i>
+    </div>
+    <h3>No Orders Found</h3>
+    <p *ngIf="selectedStatus">No orders found with the selected status.</p>
+    <p *ngIf="!selectedStatus">You haven't placed any orders yet.</p>
+    <button class="btn btn-primary" routerLink="/products">
+      Start Shopping
+    </button>
+  </div>
+
+  <!-- Orders List -->
+  <div class="orders-list" *ngIf="!isLoading && !error && orders.length > 0">
+    <div class="order-card" *ngFor="let order of orders">
+      <div class="order-header">
+        <div class="order-info">
+          <h3 class="order-number">Order #{{ order.orderNumber }}</h3>
+          <p class="order-date">Placed on {{ formatDate(order.createdAt) }}</p>
+        </div>
+        <div class="order-status">
+          <span class="status-badge" [ngClass]="getOrderStatusColorClass(order.status)">
+            {{ getOrderStatusDisplayName(order.status) }}
+          </span>
+        </div>
+      </div>
+
+      <div class="order-content">
+        <!-- Order Items Preview -->
+        <div class="order-items-preview">
+          <div class="item-preview" *ngFor="let item of order.orderItems.slice(0, 3)">
+            <div class="item-image">
+              <img src="/assets/images/product-placeholder.png" 
+                   [alt]="item.productName">
+            </div>
+            <div class="item-info">
+              <div class="item-name">{{ item.productName }}</div>
+              <div class="item-details">Qty: {{ item.quantity }} × {{ formatCurrency(item.unitPrice) }}</div>
+            </div>
+          </div>
+          <div class="more-items" *ngIf="order.orderItems.length > 3">
+            +{{ order.orderItems.length - 3 }} more item(s)
+          </div>
+        </div>
+
+        <!-- Order Summary -->
+        <div class="order-summary">
+          <div class="summary-line">
+            <span>{{ order.totalItemCount }} item(s)</span>
+            <span class="total-amount">{{ formatCurrency(order.totalAmount) }}</span>
+          </div>
+          <div class="payment-status" *ngIf="order.paymentStatus">
+            <span class="payment-label">Payment:</span>
+            <span class="payment-value" 
+                  [ngClass]="order.paymentStatus === 'PAID' ? 'text-green-600' : 'text-yellow-600'">
+              {{ order.paymentStatus === 'PAID' ? 'Paid' : 'Pending' }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Order Actions -->
+      <div class="order-actions">
+        <button class="btn btn-outline" (click)="viewOrderDetails(order)">
+          <i class="material-icons">visibility</i>
+          View Details
+        </button>
+        
+        <button class="btn btn-outline" (click)="trackOrder(order)">
+          <i class="material-icons">track_changes</i>
+          Track Order
+        </button>
+        
+        <button 
+          class="btn btn-outline" 
+          (click)="reorderItems(order)"
+          *ngIf="order.status === 'DELIVERED'">
+          <i class="material-icons">refresh</i>
+          Reorder
+        </button>
+        
+        <button 
+          class="btn btn-danger" 
+          (click)="cancelOrder(order)"
+          *ngIf="canCancelOrder(order)">
+          <i class="material-icons">cancel</i>
+          Cancel
+        </button>
+        
+        <button 
+          class="btn btn-outline" 
+          (click)="downloadInvoice(order)"
+          *ngIf="order.paymentStatus === 'PAID'">
+          <i class="material-icons">download</i>
+          Invoice
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  <div class="pagination" *ngIf="!isLoading && !error && totalPages > 1">
+    <button 
+      class="pagination-btn" 
+      (click)="previousPage()" 
+      [disabled]="currentPage === 0">
+      <i class="material-icons">chevron_left</i>
+      Previous
+    </button>
+    
+    <div class="page-numbers">
+      <button 
+        class="page-number" 
+        *ngFor="let page of getPageNumbers()"
+        (click)="goToPage(page)"
+        [class.active]="page === currentPage">
+        {{ page + 1 }}
+      </button>
+    </div>
+    
+    <button 
+      class="pagination-btn" 
+      (click)="nextPage()" 
+      [disabled]="currentPage === totalPages - 1">
+      Next
+      <i class="material-icons">chevron_right</i>
+    </button>
+  </div>
+
+  <!-- Pagination Info -->
+  <div class="pagination-info" *ngIf="!isLoading && !error && orders.length > 0">
+    <p>
+      Showing {{ currentPage * pageSize + 1 }} to 
+      {{ Math.min((currentPage + 1) * pageSize, totalElements) }} of 
+      {{ totalElements }} orders
+    </p>
+  </div>
+</div>

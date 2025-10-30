@@ -149,21 +149,32 @@
     - Implement cart persistence in local storage
     - _Requirements: 2.1, 2.2, 2.3, 7.3_
 
-- [ ] 6. Build order processing system
-  - [ ] 6.1 Implement Order REST API endpoints
+- [x] 6. Build order processing system
+
+
+
+
+
+  - [x] 6.1 Implement Order REST API endpoints
+
+
     - Create OrderController with order creation and tracking
     - Add order status management and updates
     - Implement order history retrieval for customers
     - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 6.1, 6.2, 6.3, 6.4, 6.5, 7.4_
   
-  - [ ] 6.2 Create checkout and payment components
+  - [x] 6.2 Create checkout and payment components
+
+
     - Build CheckoutComponent with address and payment forms
     - Implement OrderConfirmationComponent for successful orders
     - Add form validation and error handling
     - Create order summary and review functionality
     - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5_
   
-  - [ ] 6.3 Implement order management for customers
+  - [x] 6.3 Implement order management for customers
+
+
     - Create OrderHistoryComponent for customer order tracking
     - Build OrderDetailComponent with status updates
     - Add order cancellation functionality where applicable
