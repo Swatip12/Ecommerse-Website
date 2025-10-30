@@ -1,0 +1,321 @@
+<div class="admin-dashboard">
+  <!-- Header -->
+  <div class="dashboard-header">
+    <div class="header-content">
+      <h1 class="dashboard-title">Admin Dashboard</h1>
+      <div class="header-actions">
+        <div class="date-filters">
+          <input 
+            type="date" 
+            [(ngModel)]="startDate" 
+            (change)="onDateRangeChange()"
+            class="date-input">
+          <span class="date-separator">to</span>
+          <input 
+            type="date" 
+            [(ngModel)]="endDate" 
+            (change)="onDateRangeChange()"
+            class="date-input">
+        </div>
+        
+        <div class="action-buttons">
+          <button 
+            (click)="toggleAutoRefresh()" 
+            [class.active]="autoRefresh"
+            class="refresh-toggle">
+            <span class="refresh-icon">🔄</span>
+            Auto Refresh
+          </button>
+          
+          <button (click)="refreshData()" class="refresh-btn">
+            Refresh
+          </button>
+          
+          <div class="export-dropdown">
+            <button class="export-btn">Export</button>
+            <div class="dropdown-menu">
+              <button (click)="exportData('csv')">CSV</button>
+              <button (click)="exportData('excel')">Excel</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="loading-spinner"></div>
+    <p>Loading dashboard data...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !loading" class="error-container">
+    <div class="error-message">
+      <span class="error-icon">⚠️</span>
+      {{ error }}
+    </div>
+    <button (click)="refreshData()" class="retry-btn">Try Again</button>
+  </div>
+
+  <!-- Dashboard Content -->
+  <div *ngIf="metrics && !loading" class="dashboard-content">
+    
+    <!-- Key Metrics Cards -->
+    <div class="metrics-grid">
+      <!-- Order Metrics -->
+      <div class="metric-card">
+        <div class="metric-header">
+          <h3>Orders</h3>
+          <span class="metric-icon">📦</span>
+        </div>
+        <div class="metric-value">{{ metrics.orderStatistics.totalOrders | number }}</div>
+        <div class="metric-details">
+          <div class="detail-item">
+            <span class="label">Pending:</span>
+            <span class="value">{{ metrics.orderStatistics.pendingOrders }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="label">Processing:</span>
+            <span class="value">{{ metrics.orderStatistics.processingOrders }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Revenue Metrics -->
+      <div class="metric-card">
+        <div class="metric-header">
+          <h3>Revenue</h3>
+          <span class="metric-icon">💰</span>
+        </div>
+        <div class="metric-value">{{ formatCurrency(metrics.orderStatistics.totalRevenue) }}</div>
+        <div class="metric-details">
+          <div class="detail-item">
+            <span class="label">Avg Order:</span>
+            <span class="value">{{ formatCurrency(metrics.orderStatistics.averageOrderValue) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Product Metrics -->
+      <div class="metric-card">
+        <div class="metric-header">
+          <h3>Products</h3>
+          <span class="metric-icon">🛍️</span>
+        </div>
+        <div class="metric-value">{{ metrics.inventoryStatistics.totalProducts | number }}</div>
+        <div class="metric-details">
+          <div class="detail-item">
+            <span class="label">Active:</span>
+            <span class="value">{{ metrics.inventoryStatistics.activeProducts }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="label">Low Stock:</span>
+            <span class="value warning">{{ metrics.inventoryStatistics.lowStockProducts }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- User Metrics -->
+      <div class="metric-card">
+        <div class="metric-header">
+          <h3>Users</h3>
+          <span class="metric-icon">👥</span>
+        </div>
+        <div class="metric-value">{{ metrics.userStatistics.totalUsers | number }}</div>
+        <div class="metric-details">
+          <div class="detail-item">
+            <span class="label">Active:</span>
+            <span class="value">{{ metrics.userStatistics.activeUsers }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="label">Verified:</span>
+            <span class="value">{{ metrics.userStatistics.verifiedUsers }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts and Analytics -->
+    <div class="analytics-grid">
+      
+      <!-- Order Status Distribution -->
+      <div class="analytics-card">
+        <div class="card-header">
+          <h3>Order Status Distribution</h3>
+        </div>
+        <div class="chart-container">
+          <div class="status-chart">
+            <div *ngFor="let entry of getOrderStatusEntries()" class="status-item">
+              <div class="status-bar">
+                <div 
+                  class="status-fill" 
+                  [ngClass]="getStatusColor(entry[0])"
+                  [style.width.%]="(entry[1] / metrics.orderStatistics.totalOrders) * 100">
+                </div>
+              </div>
+              <div class="status-label">
+                <span class="status-name">{{ entry[0] }}</span>
+                <span class="status-count">{{ entry[1] }}</span>
+                <span class="status-percentage">
+                  {{ formatPercentage(entry[1], metrics.orderStatistics.totalOrders) }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Inventory Overview -->
+      <div class="analytics-card">
+        <div class="card-header">
+          <h3>Inventory Overview</h3>
+        </div>
+        <div class="inventory-stats">
+          <div class="stat-item">
+            <div class="stat-label">Total Value</div>
+            <div class="stat-value">{{ formatCurrency(metrics.inventoryStatistics.totalInventoryValue) }}</div>
+          </div>
+          <div class="stat-item warning">
+            <div class="stat-label">Out of Stock</div>
+            <div class="stat-value">{{ metrics.inventoryStatistics.outOfStockProducts }}</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-label">Categories</div>
+            <div class="stat-value">{{ getCategoryEntries().length }}</div>
+          </div>
+        </div>
+        
+        <div class="category-breakdown">
+          <h4>Products by Category</h4>
+          <div *ngFor="let entry of getCategoryEntries()" class="category-item">
+            <span class="category-name">{{ entry[0] }}</span>
+            <span class="category-count">{{ entry[1] }} products</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sales Report -->
+      <div *ngIf="salesReport" class="analytics-card full-width">
+        <div class="card-header">
+          <h3>Sales Report</h3>
+          <select [(ngModel)]="selectedPeriod" (change)="onPeriodChange()" class="period-select">
+            <option value="daily">Daily</option>
+            <option value="weekly">Weekly</option>
+            <option value="monthly">Monthly</option>
+            <option value="yearly">Yearly</option>
+          </select>
+        </div>
+        
+        <div class="sales-summary">
+          <div class="summary-item">
+            <div class="summary-label">Total Sales</div>
+            <div class="summary-value">{{ formatCurrency(salesReport.totalSales) }}</div>
+          </div>
+          <div class="summary-item">
+            <div class="summary-label">Total Orders</div>
+            <div class="summary-value">{{ salesReport.totalOrders | number }}</div>
+          </div>
+          <div class="summary-item">
+            <div class="summary-label">Avg Order Value</div>
+            <div class="summary-value">{{ formatCurrency(salesReport.averageOrderValue) }}</div>
+          </div>
+        </div>
+
+        <div class="top-products">
+          <h4>Top Products</h4>
+          <div class="products-list">
+            <div *ngFor="let product of getTopProducts(); let i = index" class="product-item">
+              <div class="product-rank">{{ i + 1 }}</div>
+              <div class="product-info">
+                <div class="product-name">{{ product.productName }}</div>
+                <div class="product-stats">
+                  <span>{{ product.quantitySold }} sold</span>
+                  <span>{{ formatCurrency(product.revenue) }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- User Management Summary -->
+      <div class="analytics-card">
+        <div class="card-header">
+          <h3>User Management</h3>
+          <a routerLink="/admin/users" class="view-all-link">View All</a>
+        </div>
+        
+        <div class="user-stats">
+          <div class="user-roles">
+            <div *ngFor="let entry of getUserRoleEntries()" class="role-item">
+              <span class="role-name">{{ entry[0] }}</span>
+              <span class="role-count">{{ entry[1] }}</span>
+            </div>
+          </div>
+          
+          <div class="user-status">
+            <div class="status-item">
+              <span class="status-label">Active Users</span>
+              <span class="status-value success">{{ metrics.userStatistics.activeUsers }}</span>
+            </div>
+            <div class="status-item">
+              <span class="status-label">Inactive Users</span>
+              <span class="status-value warning">{{ metrics.userStatistics.inactiveUsers }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- System Alerts -->
+      <div class="analytics-card">
+        <div class="card-header">
+          <h3>System Alerts</h3>
+        </div>
+        
+        <div class="alerts-list">
+          <div *ngIf="metrics.inventoryStatistics.lowStockProducts > 0" class="alert-item warning">
+            <span class="alert-icon">⚠️</span>
+            <div class="alert-content">
+              <div class="alert-title">Low Stock Alert</div>
+              <div class="alert-message">
+                {{ metrics.inventoryStatistics.lowStockProducts }} products are running low on stock
+              </div>
+            </div>
+          </div>
+          
+          <div *ngIf="metrics.inventoryStatistics.outOfStockProducts > 0" class="alert-item error">
+            <span class="alert-icon">🚫</span>
+            <div class="alert-content">
+              <div class="alert-title">Out of Stock</div>
+              <div class="alert-message">
+                {{ metrics.inventoryStatistics.outOfStockProducts }} products are out of stock
+              </div>
+            </div>
+          </div>
+          
+          <div *ngIf="metrics.orderStatistics.pendingOrders > 10" class="alert-item info">
+            <span class="alert-icon">📋</span>
+            <div class="alert-content">
+              <div class="alert-title">Pending Orders</div>
+              <div class="alert-message">
+                {{ metrics.orderStatistics.pendingOrders }} orders are pending processing
+              </div>
+            </div>
+          </div>
+          
+          <div *ngIf="metrics.inventoryStatistics.lowStockProducts === 0 && 
+                      metrics.inventoryStatistics.outOfStockProducts === 0 && 
+                      metrics.orderStatistics.pendingOrders <= 10" 
+               class="alert-item success">
+            <span class="alert-icon">✅</span>
+            <div class="alert-content">
+              <div class="alert-title">All Systems Normal</div>
+              <div class="alert-message">No critical alerts at this time</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

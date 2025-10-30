@@ -100,4 +100,55 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
            "AND inv.quantityAvailable > 0 " +
            "ORDER BY p.createdAt DESC")
     Page<Product> findFeaturedProducts(Pageable pageable);
+    
+    // Admin search methods (including inactive products)
+    @Query("SELECT DISTINCT p FROM Product p " +
+           "LEFT JOIN p.inventory inv " +
+           "WHERE (:searchTerm IS NULL OR " +
+           "       MATCH(p.name, p.description) AGAINST(:searchTerm IN NATURAL LANGUAGE MODE) OR " +
+           "       LOWER(p.name) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
+           "       LOWER(p.description) LIKE LOWER(CONCAT('%', :searchTerm, '%'))) " +
+           "AND (:categoryIds IS NULL OR p.category.id IN :categoryIds) " +
+           "AND (:brands IS NULL OR p.brand IN :brands) " +
+           "AND (:minPrice IS NULL OR p.price >= :minPrice) " +
+           "AND (:maxPrice IS NULL OR p.price <= :maxPrice) " +
+           "AND (:inStockOnly = false OR (inv.quantityAvailable > 0))")
+    Page<Product> findWithFiltersIncludingInactive(@Param("searchTerm") String searchTerm,
+                                                   @Param("categoryIds") List<Long> categoryIds,
+                                                   @Param("brands") List<String> brands,
+                                                   @Param("minPrice") BigDecimal minPrice,
+                                                   @Param("maxPrice") BigDecimal maxPrice,
+                                                   @Param("inStockOnly") Boolean inStockOnly,
+                                                   Pageable pageable);
+    
+    @Query("SELECT p FROM Product p WHERE " +
+           "(MATCH(p.name, p.description) AGAINST(:searchTerm IN NATURAL LANGUAGE MODE) " +
+           "OR LOWER(p.name) LIKE LOWER(CONCAT('%', :searchTerm, '%')) " +
+           "OR LOWER(p.description) LIKE LOWER(CONCAT('%', :searchTerm, '%')))")
+    Page<Product> findBySearchTerm(@Param("searchTerm") String searchTerm, Pageable pageable);
+    
+    Page<Product> findByCategoryId(Long categoryId, Pageable pageable);
+    
+    // Bulk operations support methods
+    List<Product> findByCategoryIdInAndIsActive(List<Long> categoryIds, Boolean isActive);
+    
+    List<Product> findByCategoryIdIn(List<Long> categoryIds);
+    
+    List<Product> findByIsActive(Boolean isActive);
+    
+    // Analytics methods
+    Long countByIsActive(Boolean isActive);
+    
+    @Query("SELECT SUM(p.price * inv.quantityAvailable) FROM Product p " +
+           "JOIN p.inventory inv " +
+           "WHERE p.isActive = true")
+    BigDecimal calculateTotalInventoryValue();
+    
+    @Query("SELECT c.name, COUNT(p), SUM(p.price * inv.quantityAvailable) " +
+           "FROM Product p " +
+           "JOIN p.category c " +
+           "JOIN p.inventory inv " +
+           "WHERE p.isActive = true " +
+           "GROUP BY c.id, c.name")
+    List<Object[]> countProductsByCategory();
 }

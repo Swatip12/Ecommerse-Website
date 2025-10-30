@@ -220,4 +220,76 @@ public class ProductController {
         response.put("requestedQuantity", quantity);
         return ResponseEntity.ok(response);
     }
+    
+    /**
+     * Bulk delete products
+     */
+    @DeleteMapping("/bulk")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Map<String, Object>> bulkDeleteProducts(@RequestBody List<Long> productIds) {
+        try {
+            int deletedCount = productService.bulkDeleteProducts(productIds);
+            Map<String, Object> response = new HashMap<>();
+            response.put("deletedCount", deletedCount);
+            response.put("message", "Successfully deleted " + deletedCount + " products");
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+    
+    /**
+     * Bulk update product status (active/inactive)
+     */
+    @PutMapping("/bulk/status")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Map<String, Object>> bulkUpdateProductStatus(
+            @RequestBody Map<String, Object> request) {
+        try {
+            @SuppressWarnings("unchecked")
+            List<Long> productIds = (List<Long>) request.get("productIds");
+            Boolean isActive = (Boolean) request.get("isActive");
+            
+            int updatedCount = productService.bulkUpdateProductStatus(productIds, isActive);
+            Map<String, Object> response = new HashMap<>();
+            response.put("updatedCount", updatedCount);
+            response.put("message", "Successfully updated " + updatedCount + " products");
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+    
+    /**
+     * Admin search - includes inactive products
+     */
+    @PostMapping("/admin/search")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Page<ProductResponse>> adminSearchProducts(@RequestBody ProductSearchRequest searchRequest) {
+        Page<ProductResponse> products = productService.adminSearchProducts(searchRequest);
+        return ResponseEntity.ok(products);
+    }
+    
+    /**
+     * Export products to CSV
+     */
+    @GetMapping("/export/csv")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<String> exportProductsToCSV(
+            @RequestParam(required = false) List<Long> categoryIds,
+            @RequestParam(required = false) Boolean isActive) {
+        try {
+            String csvData = productService.exportProductsToCSV(categoryIds, isActive);
+            return ResponseEntity.ok()
+                    .header("Content-Type", "text/csv")
+                    .header("Content-Disposition", "attachment; filename=products.csv")
+                    .body(csvData);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
 }

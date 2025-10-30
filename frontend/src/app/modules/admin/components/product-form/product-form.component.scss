@@ -1,0 +1,123 @@
+.product-form-dialog {
+  min-width: 600px;
+  max-width: 800px;
+  
+  mat-dialog-content {
+    max-height: 70vh;
+    overflow-y: auto;
+    padding: 0 24px;
+  }
+  
+  .product-form {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    
+    .form-section {
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 20px;
+      
+      h3 {
+        margin: 0 0 16px 0;
+        color: #333;
+        font-size: 16px;
+        font-weight: 500;
+        border-bottom: 1px solid #e0e0e0;
+        padding-bottom: 8px;
+      }
+      
+      .form-row {
+        display: flex;
+        gap: 16px;
+        margin-bottom: 16px;
+        
+        &:last-child {
+          margin-bottom: 0;
+        }
+        
+        &.two-columns {
+          mat-form-field {
+            flex: 1;
+          }
+        }
+        
+        .full-width {
+          width: 100%;
+        }
+      }
+      
+      mat-form-field {
+        &.full-width {
+          width: 100%;
+        }
+      }
+      
+      mat-checkbox {
+        margin-top: 8px;
+      }
+    }
+  }
+  
+  mat-dialog-actions {
+    padding: 16px 24px;
+    border-top: 1px solid #e0e0e0;
+    
+    button {
+      margin-left: 8px;
+      
+      &:first-child {
+        margin-left: 0;
+      }
+    }
+    
+    mat-spinner {
+      margin-right: 8px;
+    }
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .product-form-dialog {
+    min-width: auto;
+    width: 95vw;
+    max-width: none;
+    
+    .product-form {
+      .form-section {
+        padding: 16px;
+        
+        .form-row {
+          &.two-columns {
+            flex-direction: column;
+            gap: 0;
+            
+            mat-form-field {
+              margin-bottom: 16px;
+              
+              &:last-child {
+                margin-bottom: 0;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// Form validation styles
+.mat-form-field {
+  &.ng-invalid.ng-touched {
+    .mat-form-field-outline {
+      color: #f44336;
+    }
+  }
+}
+
+// Loading state
+button[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

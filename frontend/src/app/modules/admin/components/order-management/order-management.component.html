@@ -1,0 +1,251 @@
+<div class="order-management-dialog">
+  <!-- Header -->
+  <div class="dialog-header">
+    <h2 mat-dialog-title>Manage Order {{ order().orderNumber }}</h2>
+    <button mat-icon-button mat-dialog-close>
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <!-- Order Summary -->
+  <div class="order-summary">
+    <div class="summary-item">
+      <span class="label">Status:</span>
+      <mat-chip [class]="getStatusBadgeClass(order().status)">
+        {{ order().status | titlecase }}
+      </mat-chip>
+    </div>
+    <div class="summary-item">
+      <span class="label">Total:</span>
+      <span class="value">{{ formatCurrency(order().totalAmount, order().currency) }}</span>
+    </div>
+    <div class="summary-item">
+      <span class="label">Payment:</span>
+      <span class="value">{{ order().paymentStatus | titlecase }}</span>
+    </div>
+    <div class="summary-item">
+      <span class="label">Created:</span>
+      <span class="value">{{ formatDate(order().createdAt) }}</span>
+    </div>
+  </div>
+
+  <!-- Management Tabs -->
+  <mat-tab-group class="management-tabs">
+    <!-- Status Update Tab -->
+    <mat-tab label="Update Status">
+      <div class="tab-content">
+        <form [formGroup]="statusForm" (ngSubmit)="updateStatus()">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>New Status</mat-label>
+            <mat-select formControlName="newStatus">
+              <mat-option *ngFor="let status of availableStatuses" [value]="status">
+                {{ status | titlecase }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Notes</mat-label>
+            <textarea matInput formControlName="notes" rows="3" 
+                      placeholder="Add notes about this status change..."></textarea>
+          </mat-form-field>
+
+          <div class="form-actions">
+            <button mat-raised-button 
+                    color="primary" 
+                    type="submit" 
+                    [disabled]="statusForm.invalid || loading()">
+              <mat-spinner *ngIf="loading()" diameter="20"></mat-spinner>
+              Update Status
+            </button>
+          </div>
+        </form>
+      </div>
+    </mat-tab>
+
+    <!-- Fulfill Order Tab -->
+    <mat-tab label="Fulfill" [disabled]="!canFulfill()">
+      <div class="tab-content">
+        <form [formGroup]="fulfillForm" (ngSubmit)="fulfillOrder()">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Warehouse Location</mat-label>
+            <input matInput formControlName="warehouseLocation" 
+                   placeholder="e.g., Warehouse A, Section 1">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Fulfillment Method</mat-label>
+            <mat-select formControlName="fulfillmentMethod">
+              <mat-option value="STANDARD">Standard Fulfillment</mat-option>
+              <mat-option value="EXPRESS">Express Fulfillment</mat-option>
+              <mat-option value="DROPSHIP">Drop Shipping</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Notes</mat-label>
+            <textarea matInput formControlName="notes" rows="3" 
+                      placeholder="Add fulfillment notes..."></textarea>
+          </mat-form-field>
+
+          <div class="form-actions">
+            <button mat-raised-button 
+                    color="primary" 
+                    type="submit" 
+                    [disabled]="loading()">
+              <mat-spinner *ngIf="loading()" diameter="20"></mat-spinner>
+              Mark as Fulfilled
+            </button>
+          </div>
+        </form>
+      </div>
+    </mat-tab>
+
+    <!-- Ship Order Tab -->
+    <mat-tab label="Ship" [disabled]="!canShip()">
+      <div class="tab-content">
+        <form [formGroup]="shipForm" (ngSubmit)="shipOrder()">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Tracking Number</mat-label>
+            <input matInput formControlName="trackingNumber" 
+                   placeholder="e.g., 1Z999AA1234567890" required>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Carrier</mat-label>
+            <mat-select formControlName="carrier" required>
+              <mat-option value="UPS">UPS</mat-option>
+              <mat-option value="FEDEX">FedEx</mat-option>
+              <mat-option value="USPS">USPS</mat-option>
+              <mat-option value="DHL">DHL</mat-option>
+              <mat-option value="OTHER">Other</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Shipping Method</mat-label>
+            <mat-select formControlName="shippingMethod">
+              <mat-option value="GROUND">Ground</mat-option>
+              <mat-option value="EXPRESS">Express</mat-option>
+              <mat-option value="OVERNIGHT">Overnight</mat-option>
+              <mat-option value="TWO_DAY">Two Day</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Notes</mat-label>
+            <textarea matInput formControlName="notes" rows="3" 
+                      placeholder="Add shipping notes..."></textarea>
+          </mat-form-field>
+
+          <div class="form-actions">
+            <button mat-raised-button 
+                    color="primary" 
+                    type="submit" 
+                    [disabled]="shipForm.invalid || loading()">
+              <mat-spinner *ngIf="loading()" diameter="20"></mat-spinner>
+              Mark as Shipped
+            </button>
+          </div>
+        </form>
+      </div>
+    </mat-tab>
+
+    <!-- Refund Order Tab -->
+    <mat-tab label="Refund" [disabled]="!canRefund()">
+      <div class="tab-content">
+        <form [formGroup]="refundForm" (ngSubmit)="refundOrder()">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Refund Amount</mat-label>
+            <input matInput type="number" formControlName="refundAmount" 
+                   [max]="order().totalAmount" min="0.01" step="0.01" required>
+            <span matSuffix>{{ order().currency }}</span>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Reason</mat-label>
+            <mat-select formControlName="reason" required>
+              <mat-option value="CUSTOMER_REQUEST">Customer Request</mat-option>
+              <mat-option value="DEFECTIVE_PRODUCT">Defective Product</mat-option>
+              <mat-option value="WRONG_ITEM">Wrong Item Sent</mat-option>
+              <mat-option value="DAMAGED_SHIPPING">Damaged in Shipping</mat-option>
+              <mat-option value="ORDER_ERROR">Order Error</mat-option>
+              <mat-option value="OTHER">Other</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Refund Method</mat-label>
+            <mat-select formControlName="refundMethod">
+              <mat-option value="ORIGINAL_PAYMENT">Original Payment Method</mat-option>
+              <mat-option value="STORE_CREDIT">Store Credit</mat-option>
+              <mat-option value="CHECK">Check</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Notes</mat-label>
+            <textarea matInput formControlName="notes" rows="3" 
+                      placeholder="Add refund notes..."></textarea>
+          </mat-form-field>
+
+          <div class="form-actions">
+            <button mat-raised-button 
+                    color="warn" 
+                    type="submit" 
+                    [disabled]="refundForm.invalid || loading()">
+              <mat-spinner *ngIf="loading()" diameter="20"></mat-spinner>
+              Process Refund
+            </button>
+          </div>
+        </form>
+      </div>
+    </mat-tab>
+
+    <!-- Cancel Order Tab -->
+    <mat-tab label="Cancel" [disabled]="!canCancel()">
+      <div class="tab-content">
+        <form [formGroup]="cancelForm" (ngSubmit)="cancelOrder()">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Cancellation Reason</mat-label>
+            <mat-select formControlName="reason" required>
+              <mat-option value="CUSTOMER_REQUEST">Customer Request</mat-option>
+              <mat-option value="OUT_OF_STOCK">Out of Stock</mat-option>
+              <mat-option value="PAYMENT_FAILED">Payment Failed</mat-option>
+              <mat-option value="FRAUD_SUSPECTED">Fraud Suspected</mat-option>
+              <mat-option value="SYSTEM_ERROR">System Error</mat-option>
+              <mat-option value="OTHER">Other</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <div class="checkbox-field">
+            <mat-checkbox formControlName="refundPayment">
+              Refund payment if already processed
+            </mat-checkbox>
+          </div>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Notes</mat-label>
+            <textarea matInput formControlName="notes" rows="3" 
+                      placeholder="Add cancellation notes..."></textarea>
+          </mat-form-field>
+
+          <div class="form-actions">
+            <button mat-raised-button 
+                    color="warn" 
+                    type="submit" 
+                    [disabled]="cancelForm.invalid || loading()">
+              <mat-spinner *ngIf="loading()" diameter="20"></mat-spinner>
+              Cancel Order
+            </button>
+          </div>
+        </form>
+      </div>
+    </mat-tab>
+  </mat-tab-group>
+
+  <!-- Dialog Actions -->
+  <div mat-dialog-actions class="dialog-actions">
+    <button mat-button (click)="close()">Close</button>
+  </div>
+</div>

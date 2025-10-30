@@ -90,4 +90,41 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
      */
     @Query("SELECT o FROM Order o WHERE o.status IN ('PENDING', 'CONFIRMED') OR (o.status = 'PROCESSING' AND o.updatedAt < :cutoffTime) ORDER BY o.createdAt ASC")
     List<Order> findOrdersRequiringAttention(@Param("cutoffTime") LocalDateTime cutoffTime);
+    
+    /**
+     * Find orders with filters for admin management
+     */
+    @Query("SELECT o FROM Order o WHERE " +
+           "(:status IS NULL OR o.status = :status) AND " +
+           "(:orderNumber IS NULL OR o.orderNumber LIKE %:orderNumber%) AND " +
+           "(:userId IS NULL OR o.userId = :userId) AND " +
+           "(:startDate IS NULL OR o.createdAt >= :startDate) AND " +
+           "(:endDate IS NULL OR o.createdAt <= :endDate) " +
+           "ORDER BY o.createdAt DESC")
+    Page<Order> findOrdersWithFilters(@Param("status") OrderStatus status,
+                                     @Param("orderNumber") String orderNumber,
+                                     @Param("userId") Long userId,
+                                     @Param("startDate") LocalDateTime startDate,
+                                     @Param("endDate") LocalDateTime endDate,
+                                     Pageable pageable);
+    
+    /**
+     * Count orders in date range
+     */
+    @Query("SELECT COUNT(o) FROM Order o WHERE o.createdAt BETWEEN :startDate AND :endDate")
+    long countOrdersInDateRange(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
+    
+    /**
+     * Count orders by status in date range
+     */
+    @Query("SELECT COUNT(o) FROM Order o WHERE o.status = :status AND o.createdAt BETWEEN :startDate AND :endDate")
+    long countOrdersByStatusInDateRange(@Param("status") OrderStatus status, 
+                                       @Param("startDate") LocalDateTime startDate, 
+                                       @Param("endDate") LocalDateTime endDate);
+    
+    /**
+     * Get total revenue in date range
+     */
+    @Query("SELECT SUM(o.totalAmount) FROM Order o WHERE o.status IN ('DELIVERED', 'SHIPPED') AND o.createdAt BETWEEN :startDate AND :endDate")
+    java.math.BigDecimal getTotalRevenueInDateRange(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
 }

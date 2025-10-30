@@ -1,0 +1,232 @@
+.admin-order-list {
+  padding: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+
+    h1 {
+      margin: 0;
+      color: #333;
+      font-weight: 500;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 12px;
+    }
+  }
+
+  .filters-card {
+    margin-bottom: 24px;
+
+    .filters-form {
+      .filter-row {
+        display: flex;
+        gap: 16px;
+        align-items: flex-end;
+        margin-bottom: 16px;
+
+        mat-form-field {
+          flex: 1;
+          min-width: 200px;
+        }
+
+        .filter-actions {
+          display: flex;
+          align-items: center;
+          padding-bottom: 8px;
+        }
+      }
+    }
+  }
+
+  .loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 48px;
+    text-align: center;
+
+    mat-spinner {
+      margin-bottom: 16px;
+    }
+
+    p {
+      color: #666;
+      margin: 0;
+    }
+  }
+
+  .table-card {
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 48px;
+      text-align: center;
+
+      mat-icon {
+        font-size: 64px;
+        width: 64px;
+        height: 64px;
+        color: #ccc;
+        margin-bottom: 16px;
+      }
+
+      h3 {
+        margin: 0 0 8px 0;
+        color: #666;
+      }
+
+      p {
+        margin: 0;
+        color: #999;
+      }
+    }
+
+    .table-container {
+      .orders-table {
+        width: 100%;
+
+        .order-number {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+
+          .attention-icon {
+            font-size: 18px;
+            width: 18px;
+            height: 18px;
+          }
+        }
+
+        .user-info {
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+
+          small {
+            color: #666;
+            font-size: 12px;
+          }
+        }
+
+        .amount-info {
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+
+          small {
+            color: #666;
+            font-size: 12px;
+          }
+        }
+
+        .date-info {
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+
+          small {
+            color: #666;
+            font-size: 12px;
+          }
+        }
+
+        .action-buttons {
+          display: flex;
+          gap: 4px;
+        }
+
+        // Row priority styling
+        tr.priority-high {
+          background-color: #ffebee;
+          border-left: 4px solid #f44336;
+        }
+
+        tr.priority-medium {
+          background-color: #fff3e0;
+          border-left: 4px solid #ff9800;
+        }
+      }
+
+      mat-paginator {
+        margin-top: 16px;
+      }
+    }
+  }
+}
+
+// Status badge styles
+mat-chip {
+  &.bg-yellow-100 {
+    background-color: #fef3c7;
+    color: #92400e;
+  }
+
+  &.bg-blue-100 {
+    background-color: #dbeafe;
+    color: #1e40af;
+  }
+
+  &.bg-purple-100 {
+    background-color: #e9d5ff;
+    color: #7c3aed;
+  }
+
+  &.bg-indigo-100 {
+    background-color: #e0e7ff;
+    color: #3730a3;
+  }
+
+  &.bg-green-100 {
+    background-color: #dcfce7;
+    color: #166534;
+  }
+
+  &.bg-red-100 {
+    background-color: #fee2e2;
+    color: #dc2626;
+  }
+
+  &.bg-gray-100 {
+    background-color: #f3f4f6;
+    color: #374151;
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .admin-order-list {
+    padding: 16px;
+
+    .header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 16px;
+    }
+
+    .filters-form .filter-row {
+      flex-direction: column;
+      align-items: stretch;
+
+      mat-form-field {
+        min-width: unset;
+      }
+    }
+
+    .orders-table {
+      .mat-column-userId,
+      .mat-column-createdAt {
+        display: none;
+      }
+    }
+  }
+}

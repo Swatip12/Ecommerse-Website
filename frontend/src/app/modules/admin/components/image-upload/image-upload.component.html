@@ -1,0 +1,117 @@
+<div class="image-upload-container">
+  
+  <!-- Upload Area -->
+  <div class="upload-area" 
+       (dragover)="onDragOver($event)"
+       (dragleave)="onDragLeave($event)"
+       (drop)="onDrop($event)"
+       [class.uploading]="uploading">
+    
+    <input type="file" 
+           id="file-input"
+           multiple 
+           accept="image/*"
+           (change)="onFileSelected($event)"
+           style="display: none;">
+    
+    <div class="upload-content" *ngIf="!uploading">
+      <mat-icon class="upload-icon">cloud_upload</mat-icon>
+      <h4>Upload Product Images</h4>
+      <p>Drag and drop images here or click to browse</p>
+      <p class="upload-info">Supported formats: JPG, PNG, GIF, WebP (Max 5MB each)</p>
+      
+      <button mat-raised-button color="primary" (click)="triggerFileInput()">
+        <mat-icon>add_photo_alternate</mat-icon>
+        Choose Images
+      </button>
+    </div>
+    
+    <div class="upload-progress" *ngIf="uploading">
+      <mat-icon class="upload-icon">cloud_upload</mat-icon>
+      <h4>Uploading Images...</h4>
+      <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+    </div>
+  </div>
+  
+  <!-- Images Grid -->
+  <div class="images-grid" *ngIf="images.length > 0">
+    <h4>Product Images ({{images.length}})</h4>
+    
+    <div class="images-container" 
+         cdkDropList 
+         (cdkDropListDropped)="onImageOrderChanged($event)">
+      
+      <div class="image-item" 
+           *ngFor="let image of images; trackBy: trackByImageId"
+           cdkDrag>
+        
+        <div class="image-wrapper">
+          <img [src]="image.imageUrl" 
+               [alt]="image.altText || 'Product image'" 
+               class="product-image">
+          
+          <!-- Primary Badge -->
+          <div class="primary-badge" *ngIf="image.isPrimary">
+            <mat-icon>star</mat-icon>
+            <span>Primary</span>
+          </div>
+          
+          <!-- Image Actions -->
+          <div class="image-actions">
+            <button mat-icon-button 
+                    [matMenuTriggerFor]="imageMenu"
+                    class="action-button">
+              <mat-icon>more_vert</mat-icon>
+            </button>
+            
+            <mat-menu #imageMenu="matMenu">
+              <button mat-menu-item 
+                      (click)="setPrimaryImage(image)"
+                      [disabled]="image.isPrimary">
+                <mat-icon>star</mat-icon>
+                <span>Set as Primary</span>
+              </button>
+              <button mat-menu-item 
+                      (click)="deleteImage(image)"
+                      class="delete-action">
+                <mat-icon>delete</mat-icon>
+                <span>Delete</span>
+              </button>
+            </mat-menu>
+          </div>
+          
+          <!-- Drag Handle -->
+          <div class="drag-handle" cdkDragHandle>
+            <mat-icon>drag_indicator</mat-icon>
+          </div>
+        </div>
+        
+        <!-- Image Info -->
+        <div class="image-info">
+          <div class="image-name">{{image.altText || 'Product Image'}}</div>
+          <div class="image-order">Order: {{image.displayOrder + 1}}</div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Empty State -->
+    <div class="empty-images" *ngIf="images.length === 0">
+      <mat-icon>image</mat-icon>
+      <p>No images uploaded yet</p>
+    </div>
+  </div>
+  
+  <!-- Upload Instructions -->
+  <div class="upload-instructions" *ngIf="images.length > 0">
+    <mat-icon>info</mat-icon>
+    <div class="instructions-text">
+      <p><strong>Tips:</strong></p>
+      <ul>
+        <li>Drag images to reorder them</li>
+        <li>The first image will be set as primary by default</li>
+        <li>Use the menu to set a different primary image</li>
+        <li>Recommended image size: 800x800px or larger</li>
+      </ul>
+    </div>
+  </div>
+</div>

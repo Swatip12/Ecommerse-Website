@@ -1,0 +1,141 @@
+<div class="product-form-dialog">
+  <h2 mat-dialog-title>{{dialogTitle}}</h2>
+  
+  <mat-dialog-content>
+    <form [formGroup]="productForm" class="product-form">
+      
+      <!-- Basic Information -->
+      <div class="form-section">
+        <h3>Basic Information</h3>
+        
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>SKU</mat-label>
+            <input matInput formControlName="sku" placeholder="Enter product SKU">
+            <mat-error *ngIf="isFieldInvalid('sku')">
+              {{getFieldError('sku')}}
+            </mat-error>
+          </mat-form-field>
+        </div>
+        
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Product Name</mat-label>
+            <input matInput formControlName="name" placeholder="Enter product name">
+            <mat-error *ngIf="isFieldInvalid('name')">
+              {{getFieldError('name')}}
+            </mat-error>
+          </mat-form-field>
+        </div>
+        
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Description</mat-label>
+            <textarea matInput formControlName="description" 
+                      placeholder="Enter product description" 
+                      rows="4"></textarea>
+          </mat-form-field>
+        </div>
+      </div>
+      
+      <!-- Pricing and Category -->
+      <div class="form-section">
+        <h3>Pricing and Category</h3>
+        
+        <div class="form-row two-columns">
+          <mat-form-field appearance="outline">
+            <mat-label>Price</mat-label>
+            <input matInput type="number" formControlName="price" 
+                   placeholder="0.00" step="0.01" min="0">
+            <span matPrefix>$&nbsp;</span>
+            <mat-error *ngIf="isFieldInvalid('price')">
+              {{getFieldError('price')}}
+            </mat-error>
+          </mat-form-field>
+          
+          <mat-form-field appearance="outline">
+            <mat-label>Category</mat-label>
+            <mat-select formControlName="categoryId">
+              <mat-option *ngFor="let category of categories" [value]="category.id">
+                {{category.name}}
+              </mat-option>
+            </mat-select>
+            <mat-error *ngIf="isFieldInvalid('categoryId')">
+              {{getFieldError('categoryId')}}
+            </mat-error>
+          </mat-form-field>
+        </div>
+        
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Brand</mat-label>
+            <input matInput formControlName="brand" placeholder="Enter brand name">
+            <mat-error *ngIf="isFieldInvalid('brand')">
+              {{getFieldError('brand')}}
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+      
+      <!-- Physical Properties -->
+      <div class="form-section">
+        <h3>Physical Properties</h3>
+        
+        <div class="form-row two-columns">
+          <mat-form-field appearance="outline">
+            <mat-label>Weight</mat-label>
+            <input matInput type="number" formControlName="weight" 
+                   placeholder="0.00" step="0.01" min="0">
+            <span matSuffix>kg</span>
+            <mat-error *ngIf="isFieldInvalid('weight')">
+              {{getFieldError('weight')}}
+            </mat-error>
+          </mat-form-field>
+          
+          <mat-form-field appearance="outline">
+            <mat-label>Dimensions</mat-label>
+            <input matInput formControlName="dimensions" 
+                   placeholder="L x W x H (cm)">
+            <mat-error *ngIf="isFieldInvalid('dimensions')">
+              {{getFieldError('dimensions')}}
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+      
+      <!-- Product Images -->
+      <div class="form-section" *ngIf="isEditMode && data.product">
+        <h3>Product Images</h3>
+        <app-image-upload 
+          [productId]="data.product.id"
+          [initialImages]="productImages"
+          (imagesUpdated)="onImagesUpdated($event)">
+        </app-image-upload>
+      </div>
+      
+      <!-- Status -->
+      <div class="form-section">
+        <h3>Status</h3>
+        
+        <div class="form-row">
+          <mat-checkbox formControlName="isActive">
+            Active (product will be visible to customers)
+          </mat-checkbox>
+        </div>
+      </div>
+      
+    </form>
+  </mat-dialog-content>
+  
+  <mat-dialog-actions align="end">
+    <button mat-button (click)="onCancel()" [disabled]="loading">
+      Cancel
+    </button>
+    <button mat-raised-button color="primary" 
+            (click)="onSubmit()" 
+            [disabled]="loading || productForm.invalid">
+      <mat-spinner diameter="20" *ngIf="loading"></mat-spinner>
+      <span *ngIf="!loading">{{submitButtonText}}</span>
+    </button>
+  </mat-dialog-actions>
+</div>

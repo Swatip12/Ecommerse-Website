@@ -152,6 +152,41 @@ public class ProductService {
         return products.map(ProductResponse::new);
     }
     
+    /**
+     * Admin search - includes inactive products
+     */
+    @Transactional(readOnly = true)
+    public Page<ProductResponse> adminSearchProducts(ProductSearchRequest searchRequest) {
+        Sort sort = Sort.by(Sort.Direction.fromString(searchRequest.getSortDirection()), searchRequest.getSortBy());
+        Pageable pageable = PageRequest.of(searchRequest.getPage(), searchRequest.getSize(), sort);
+        
+        Page<Product> products;
+        
+        if (hasComplexFilters(searchRequest)) {
+            // Use complex search with all filters (including inactive products)
+            products = productRepository.findWithFiltersIncludingInactive(
+                    searchRequest.getSearchTerm(),
+                    searchRequest.getCategoryIds(),
+                    searchRequest.getBrands(),
+                    searchRequest.getMinPrice(),
+                    searchRequest.getMaxPrice(),
+                    searchRequest.getInStockOnly(),
+                    pageable
+            );
+        } else if (searchRequest.hasSearchTerm()) {
+            // Simple text search (including inactive)
+            products = productRepository.findBySearchTerm(searchRequest.getSearchTerm(), pageable);
+        } else if (searchRequest.hasCategoryFilter() && searchRequest.getCategoryIds().size() == 1) {
+            // Single category filter (including inactive)
+            products = productRepository.findByCategoryId(searchRequest.getCategoryIds().get(0), pageable);
+        } else {
+            // No filters, return all products (including inactive)
+            products = productRepository.findAll(pageable);
+        }
+        
+        return products.map(ProductResponse::new);
+    }
+    
     @Transactional(readOnly = true)
     public Page<ProductResponse> getProductsByCategory(Long categoryId, int page, int size, String sortBy, String sortDirection) {
         Sort sort = Sort.by(Sort.Direction.fromString(sortDirection), sortBy);
@@ -206,6 +241,107 @@ public class ProductService {
     @Transactional(readOnly = true)
     public boolean isProductAvailable(Long productId, Integer requestedQuantity) {
         return inventoryService.isQuantityAvailable(productId, requestedQuantity);
+    }
+    
+    /**
+     * Bulk delete products (soft delete by setting isActive to false)
+     */
+    public int bulkDeleteProducts(List<Long> productIds) {
+        if (productIds == null || productIds.isEmpty()) {
+            throw new RuntimeException("Product IDs list cannot be empty");
+        }
+        
+        List<Product> products = productRepository.findAllById(productIds);
+        if (products.size() != productIds.size()) {
+            throw new RuntimeException("Some products not found");
+        }
+        
+        products.forEach(product -> product.setIsActive(false));
+        productRepository.saveAll(products);
+        
+        return products.size();
+    }
+    
+    /**
+     * Bulk update product status (active/inactive)
+     */
+    public int bulkUpdateProductStatus(List<Long> productIds, Boolean isActive) {
+        if (productIds == null || productIds.isEmpty()) {
+            throw new RuntimeException("Product IDs list cannot be empty");
+        }
+        
+        if (isActive == null) {
+            throw new RuntimeException("Status (isActive) cannot be null");
+        }
+        
+        List<Product> products = productRepository.findAllById(productIds);
+        if (products.size() != productIds.size()) {
+            throw new RuntimeException("Some products not found");
+        }
+        
+        products.forEach(product -> product.setIsActive(isActive));
+        productRepository.saveAll(products);
+        
+        return products.size();
+    }
+    
+    /**
+     * Export products to CSV format
+     */
+    @Transactional(readOnly = true)
+    public String exportProductsToCSV(List<Long> categoryIds, Boolean isActive) {
+        List<Product> products;
+        
+        if (categoryIds != null && !categoryIds.isEmpty()) {
+            if (isActive != null) {
+                products = productRepository.findByCategoryIdInAndIsActive(categoryIds, isActive);
+            } else {
+                products = productRepository.findByCategoryIdIn(categoryIds);
+            }
+        } else {
+            if (isActive != null) {
+                products = productRepository.findByIsActive(isActive);
+            } else {
+                products = productRepository.findAll();
+            }
+        }
+        
+        StringBuilder csv = new StringBuilder();
+        // CSV Header
+        csv.append("ID,SKU,Name,Description,Price,Category,Brand,Weight,Dimensions,Active,Created At,Updated At,Available Quantity\n");
+        
+        // CSV Data
+        for (Product product : products) {
+            csv.append(product.getId()).append(",")
+               .append(escapeCSV(product.getSku())).append(",")
+               .append(escapeCSV(product.getName())).append(",")
+               .append(escapeCSV(product.getDescription())).append(",")
+               .append(product.getPrice()).append(",")
+               .append(escapeCSV(product.getCategory().getName())).append(",")
+               .append(escapeCSV(product.getBrand())).append(",")
+               .append(product.getWeight() != null ? product.getWeight() : "").append(",")
+               .append(escapeCSV(product.getDimensions())).append(",")
+               .append(product.getIsActive()).append(",")
+               .append(product.getCreatedAt()).append(",")
+               .append(product.getUpdatedAt()).append(",")
+               .append(product.getInventory() != null ? product.getInventory().getQuantityAvailable() : 0)
+               .append("\n");
+        }
+        
+        return csv.toString();
+    }
+    
+    private String escapeCSV(String value) {
+        if (value == null) {
+            return "";
+        }
+        
+        // Escape quotes and wrap in quotes if contains comma, quote, or newline
+        if (value.contains(",") || value.contains("\"") || value.contains("\n")) {
+            return "\"" + value.replace("\"", "\"\"") + "\"";
+        }
+        
+        return value;
     }
     
     private boolean hasComplexFilters(ProductSearchRequest searchRequest) {

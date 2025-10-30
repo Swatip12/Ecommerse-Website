@@ -1,0 +1,237 @@
+<div class="system-config">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <h1 class="page-title">System Configuration</h1>
+      <div class="header-actions">
+        <button (click)="onReset()" [disabled]="saving" class="reset-btn">
+          <span class="icon">🔄</span>
+          Reset to Defaults
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Success Message -->
+  <div *ngIf="successMessage" class="success-message">
+    <span class="success-icon">✅</span>
+    {{ successMessage }}
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="error" class="error-message">
+    <span class="error-icon">⚠️</span>
+    {{ error }}
+    <button (click)="loadConfiguration()" class="retry-btn">Retry</button>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="loading-spinner"></div>
+    <p>Loading configuration...</p>
+  </div>
+
+  <!-- Configuration Form -->
+  <div *ngIf="!loading" class="config-form-container">
+    <form [formGroup]="configForm" (ngSubmit)="onSave()" class="config-form">
+      
+      <!-- General Settings -->
+      <div class="config-section">
+        <div class="section-header">
+          <h2 class="section-title">General Settings</h2>
+          <p class="section-description">Basic site information and branding</p>
+        </div>
+        
+        <div class="form-grid">
+          <div class="form-group full-width">
+            <label for="siteName">Site Name *</label>
+            <input 
+              type="text" 
+              id="siteName" 
+              formControlName="siteName" 
+              class="form-input"
+              [class.error]="isFieldInvalid('siteName')">
+            <div *ngIf="isFieldInvalid('siteName')" class="field-error">
+              {{ getFieldError('siteName') }}
+            </div>
+          </div>
+          
+          <div class="form-group full-width">
+            <label for="siteDescription">Site Description</label>
+            <textarea 
+              id="siteDescription" 
+              formControlName="siteDescription" 
+              class="form-textarea"
+              rows="3"
+              placeholder="Brief description of your e-commerce store"
+              [class.error]="isFieldInvalid('siteDescription')"></textarea>
+            <div *ngIf="isFieldInvalid('siteDescription')" class="field-error">
+              {{ getFieldError('siteDescription') }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Financial Settings -->
+      <div class="config-section">
+        <div class="section-header">
+          <h2 class="section-title">Financial Settings</h2>
+          <p class="section-description">Currency, tax, and shipping configuration</p>
+        </div>
+        
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="currency">Currency *</label>
+            <select 
+              id="currency" 
+              formControlName="currency" 
+              class="form-select"
+              [class.error]="isFieldInvalid('currency')">
+              <option value="USD">USD - US Dollar</option>
+              <option value="EUR">EUR - Euro</option>
+              <option value="GBP">GBP - British Pound</option>
+              <option value="CAD">CAD - Canadian Dollar</option>
+              <option value="AUD">AUD - Australian Dollar</option>
+            </select>
+            <div *ngIf="isFieldInvalid('currency')" class="field-error">
+              {{ getFieldError('currency') }}
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="taxRate">Tax Rate *</label>
+            <div class="input-with-suffix">
+              <input 
+                type="number" 
+                id="taxRate" 
+                formControlName="taxRate" 
+                class="form-input"
+                step="0.01"
+                min="0"
+                max="1"
+                [class.error]="isFieldInvalid('taxRate')">
+              <span class="input-suffix">{{ formatPercentage(configForm.get('taxRate')?.value || 0) }}</span>
+            </div>
+            <div *ngIf="isFieldInvalid('taxRate')" class="field-error">
+              {{ getFieldError('taxRate') }}
+            </div>
+            <small class="field-help">Enter as decimal (e.g., 0.08 for 8%)</small>
+          </div>
+          
+          <div class="form-group">
+            <label for="shippingRate">Default Shipping Rate *</label>
+            <div class="input-with-prefix">
+              <span class="input-prefix">$</span>
+              <input 
+                type="number" 
+                id="shippingRate" 
+                formControlName="shippingRate" 
+                class="form-input"
+                step="0.01"
+                min="0"
+                [class.error]="isFieldInvalid('shippingRate')">
+            </div>
+            <div *ngIf="isFieldInvalid('shippingRate')" class="field-error">
+              {{ getFieldError('shippingRate') }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Inventory Settings -->
+      <div class="config-section">
+        <div class="section-header">
+          <h2 class="section-title">Inventory Settings</h2>
+          <p class="section-description">Stock management and alerts</p>
+        </div>
+        
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="lowStockThreshold">Low Stock Threshold *</label>
+            <input 
+              type="number" 
+              id="lowStockThreshold" 
+              formControlName="lowStockThreshold" 
+              class="form-input"
+              min="0"
+              [class.error]="isFieldInvalid('lowStockThreshold')">
+            <div *ngIf="isFieldInvalid('lowStockThreshold')" class="field-error">
+              {{ getFieldError('lowStockThreshold') }}
+            </div>
+            <small class="field-help">Products below this quantity will trigger low stock alerts</small>
+          </div>
+        </div>
+      </div>
+
+      <!-- System Features -->
+      <div class="config-section">
+        <div class="section-header">
+          <h2 class="section-title">System Features</h2>
+          <p class="section-description">Enable or disable system features</p>
+        </div>
+        
+        <div class="form-grid">
+          <div class="form-group checkbox-group">
+            <label class="checkbox-label">
+              <input type="checkbox" formControlName="emailNotifications">
+              <span class="checkbox-custom"></span>
+              <div class="checkbox-content">
+                <span class="checkbox-title">Email Notifications</span>
+                <span class="checkbox-description">Send automated emails for orders, alerts, etc.</span>
+              </div>
+            </label>
+          </div>
+          
+          <div class="form-group checkbox-group">
+            <label class="checkbox-label">
+              <input type="checkbox" formControlName="allowGuestCheckout">
+              <span class="checkbox-custom"></span>
+              <div class="checkbox-content">
+                <span class="checkbox-title">Allow Guest Checkout</span>
+                <span class="checkbox-description">Customers can checkout without creating an account</span>
+              </div>
+            </label>
+          </div>
+          
+          <div class="form-group checkbox-group">
+            <label class="checkbox-label">
+              <input type="checkbox" formControlName="requireEmailVerification">
+              <span class="checkbox-custom"></span>
+              <div class="checkbox-content">
+                <span class="checkbox-title">Require Email Verification</span>
+                <span class="checkbox-description">New users must verify their email address</span>
+              </div>
+            </label>
+          </div>
+          
+          <div class="form-group checkbox-group maintenance-mode">
+            <label class="checkbox-label">
+              <input type="checkbox" formControlName="maintenanceMode">
+              <span class="checkbox-custom"></span>
+              <div class="checkbox-content">
+                <span class="checkbox-title">Maintenance Mode</span>
+                <span class="checkbox-description">Temporarily disable the store for maintenance</span>
+              </div>
+            </label>
+            <div *ngIf="configForm.get('maintenanceMode')?.value" class="maintenance-warning">
+              <span class="warning-icon">⚠️</span>
+              <span>Store will be inaccessible to customers when maintenance mode is enabled</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Form Actions -->
+      <div class="form-actions">
+        <button type="button" (click)="onCancel()" [disabled]="saving" class="cancel-btn">
+          Cancel
+        </button>
+        <button type="submit" [disabled]="configForm.invalid || saving" class="save-btn">
+          <span *ngIf="saving" class="loading-spinner small"></span>
+          <span *ngIf="!saving">💾</span>
+          {{ saving ? 'Saving...' : 'Save Configuration' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

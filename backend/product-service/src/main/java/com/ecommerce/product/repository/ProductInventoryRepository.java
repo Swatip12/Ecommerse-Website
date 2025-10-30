@@ -90,4 +90,9 @@ public interface ProductInventoryRepository extends JpaRepository<ProductInvento
      */
     @Query("SELECT pi FROM ProductInventory pi WHERE pi.quantityReserved > 0 AND pi.product.isActive = true")
     List<ProductInventory> findProductsWithReservedQuantity();
+    
+    /**
+     * Count products by quantity available
+     */
+    Long countByQuantityAvailable(Integer quantityAvailable);
 }
