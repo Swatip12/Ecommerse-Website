@@ -5,6 +5,7 @@ import com.ecommerce.product.entity.Product;
 import com.ecommerce.product.entity.ProductInventory;
 import com.ecommerce.product.repository.ProductInventoryRepository;
 import com.ecommerce.product.repository.ProductRepository;
+import com.ecommerce.common.service.CacheInvalidationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -25,6 +26,9 @@ public class InventoryService {
     
     @Autowired
     private ProductRepository productRepository;
+    
+    @Autowired
+    private CacheInvalidationService cacheInvalidationService;
     
     /**
      * Get inventory information for a specific product
@@ -50,6 +54,10 @@ public class InventoryService {
         inventory.setQuantityAvailable(newQuantity);
         ProductInventory savedInventory = inventoryRepository.save(inventory);
         
+        // Invalidate related caches
+        cacheInvalidationService.invalidateProductCache(productId);
+        cacheInvalidationService.invalidateAllCartCaches();
+        
         return new InventoryResponse(savedInventory);
     }
     
@@ -66,6 +74,10 @@ public class InventoryService {
         
         inventory.addStock(quantityToAdd);
         ProductInventory savedInventory = inventoryRepository.save(inventory);
+        
+        // Invalidate related caches
+        cacheInvalidationService.invalidateProductCache(productId);
+        cacheInvalidationService.invalidateAllCartCaches();
         
         return new InventoryResponse(savedInventory);
     }

@@ -37,15 +37,32 @@ public class RedisConfig {
 
     @Bean
     public RedisCacheManager cacheManager(RedisConnectionFactory connectionFactory) {
-        RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig()
+        RedisCacheConfiguration defaultConfig = RedisCacheConfiguration.defaultCacheConfig()
                 .entryTtl(Duration.ofMinutes(10)) // Default TTL of 10 minutes
                 .serializeKeysWith(org.springframework.data.redis.serializer.RedisSerializationContext.SerializationPair
                         .fromSerializer(new StringRedisSerializer()))
                 .serializeValuesWith(org.springframework.data.redis.serializer.RedisSerializationContext.SerializationPair
                         .fromSerializer(new GenericJackson2JsonRedisSerializer()));
 
+        // Product-related caches - longer TTL since products don't change frequently
+        RedisCacheConfiguration productConfig = defaultConfig.entryTtl(Duration.ofHours(1));
+        
+        // Cart-related caches - shorter TTL for real-time updates
+        RedisCacheConfiguration cartConfig = defaultConfig.entryTtl(Duration.ofMinutes(5));
+        
+        // Search and catalog caches - medium TTL
+        RedisCacheConfiguration catalogConfig = defaultConfig.entryTtl(Duration.ofMinutes(15));
+
         return RedisCacheManager.builder(connectionFactory)
-                .cacheDefaults(config)
+                .cacheDefaults(defaultConfig)
+                .withCacheConfiguration("products", productConfig)
+                .withCacheConfiguration("products-by-sku", productConfig)
+                .withCacheConfiguration("product-brands", productConfig)
+                .withCacheConfiguration("product-price-range", productConfig)
+                .withCacheConfiguration("product-catalog", catalogConfig)
+                .withCacheConfiguration("product-search", catalogConfig)
+                .withCacheConfiguration("user-cart", cartConfig)
+                .withCacheConfiguration("guest-cart", cartConfig)
                 .build();
     }
 }

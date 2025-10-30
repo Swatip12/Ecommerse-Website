@@ -8,20 +8,50 @@ spring:
   # Database configurations for different domains
   datasource:
     user:
-      url: jdbc:mysql://localhost:3306/ecommerce_users?useSSL=false&serverTimezone=UTC
+      url: jdbc:mysql://localhost:3306/ecommerce_users?useSSL=false&serverTimezone=UTC&useUnicode=true&characterEncoding=utf8&autoReconnect=true&failOverReadOnly=false&maxReconnects=10
       username: user_service
       password: user_password
       driver-class-name: com.mysql.cj.jdbc.Driver
+      # HikariCP connection pool settings
+      hikari:
+        maximum-pool-size: 20
+        minimum-idle: 5
+        idle-timeout: 300000
+        max-lifetime: 1200000
+        connection-timeout: 20000
+        validation-timeout: 3000
+        leak-detection-threshold: 60000
+        pool-name: UserServiceHikariCP
     product:
-      url: jdbc:mysql://localhost:3306/ecommerce_products?useSSL=false&serverTimezone=UTC
+      url: jdbc:mysql://localhost:3306/ecommerce_products?useSSL=false&serverTimezone=UTC&useUnicode=true&characterEncoding=utf8&autoReconnect=true&failOverReadOnly=false&maxReconnects=10
       username: product_service
       password: product_password
       driver-class-name: com.mysql.cj.jdbc.Driver
+      # HikariCP connection pool settings
+      hikari:
+        maximum-pool-size: 25
+        minimum-idle: 8
+        idle-timeout: 300000
+        max-lifetime: 1200000
+        connection-timeout: 20000
+        validation-timeout: 3000
+        leak-detection-threshold: 60000
+        pool-name: ProductServiceHikariCP
     order:
-      url: jdbc:mysql://localhost:3306/ecommerce_orders?useSSL=false&serverTimezone=UTC
+      url: jdbc:mysql://localhost:3306/ecommerce_orders?useSSL=false&serverTimezone=UTC&useUnicode=true&characterEncoding=utf8&autoReconnect=true&failOverReadOnly=false&maxReconnects=10
       username: order_service
       password: order_password
       driver-class-name: com.mysql.cj.jdbc.Driver
+      # HikariCP connection pool settings
+      hikari:
+        maximum-pool-size: 20
+        minimum-idle: 5
+        idle-timeout: 300000
+        max-lifetime: 1200000
+        connection-timeout: 20000
+        validation-timeout: 3000
+        leak-detection-threshold: 60000
+        pool-name: OrderServiceHikariCP
   
   # JPA configuration
   jpa:
@@ -32,6 +62,23 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.MySQL8Dialect
         format_sql: true
+        # Performance optimizations
+        jdbc:
+          batch_size: 25
+          batch_versioned_data: true
+        order_inserts: true
+        order_updates: true
+        # Query optimization
+        query:
+          plan_cache_max_size: 2048
+          in_clause_parameter_padding: true
+        # Connection provider settings
+        connection:
+          provider_disables_autocommit: true
+        # Second level cache (if needed)
+        cache:
+          use_second_level_cache: false
+          use_query_cache: false
   
   # Redis configuration
   data:

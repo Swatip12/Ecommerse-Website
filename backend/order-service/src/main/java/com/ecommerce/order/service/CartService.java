@@ -9,6 +9,9 @@ import com.ecommerce.order.repository.ShoppingCartRepository;
 import com.ecommerce.product.dto.ProductResponse;
 import com.ecommerce.product.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,6 +33,7 @@ public class CartService {
     /**
      * Add item to cart for registered user
      */
+    @CacheEvict(value = "user-cart", key = "#userId")
     public CartItemDto addToCart(Long userId, AddToCartRequest request) {
         // Validate product exists and is available
         ProductResponse product = productService.getProductById(request.getProductId());
@@ -65,6 +69,7 @@ public class CartService {
     /**
      * Add item to cart for guest user
      */
+    @CacheEvict(value = "guest-cart", key = "#sessionId")
     public CartItemDto addToCart(String sessionId, AddToCartRequest request) {
         // Validate product exists and is available
         ProductResponse product = productService.getProductById(request.getProductId());
@@ -100,6 +105,7 @@ public class CartService {
     /**
      * Update cart item quantity for registered user
      */
+    @CacheEvict(value = "user-cart", key = "#userId")
     public CartItemDto updateCartItem(Long userId, Long productId, UpdateCartItemRequest request) {
         ShoppingCart cartItem = cartRepository.findByUserIdAndProductId(userId, productId)
                 .orElseThrow(() -> new RuntimeException("Cart item not found"));
@@ -134,6 +140,7 @@ public class CartService {
     /**
      * Remove item from cart for registered user
      */
+    @CacheEvict(value = "user-cart", key = "#userId")
     public void removeFromCart(Long userId, Long productId) {
         cartRepository.deleteByUserIdAndProductId(userId, productId);
     }
@@ -148,6 +155,7 @@ public class CartService {
     /**
      * Clear all items from cart for registered user
      */
+    @CacheEvict(value = "user-cart", key = "#userId")
     public void clearCart(Long userId) {
         cartRepository.deleteByUserId(userId);
     }
@@ -163,6 +171,7 @@ public class CartService {
      * Get cart summary for registered user
      */
     @Transactional(readOnly = true)
+    @Cacheable(value = "user-cart", key = "#userId")
     public CartSummaryDto getCartSummary(Long userId) {
         List<ShoppingCart> cartItems = cartRepository.findByUserIdOrderByCreatedAtDesc(userId);
         return buildCartSummary(cartItems);
@@ -172,6 +181,7 @@ public class CartService {
      * Get cart summary for guest user
      */
     @Transactional(readOnly = true)
+    @Cacheable(value = "guest-cart", key = "#sessionId")
     public CartSummaryDto getCartSummary(String sessionId) {
         List<ShoppingCart> cartItems = cartRepository.findBySessionIdOrderByCreatedAtDesc(sessionId);
         return buildCartSummary(cartItems);

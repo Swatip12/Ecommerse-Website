@@ -1,7 +1,8 @@
-import { Component, OnInit, OnDestroy, Input, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, OnDestroy, Input, Output, EventEmitter, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
 import { RouterModule } from '@angular/router';
+import { ScrollingModule } from '@angular/cdk/scrolling';
 import { Subject, debounceTime, distinctUntilChanged, takeUntil, BehaviorSubject, combineLatest } from 'rxjs';
 import { 
   Product, 
@@ -16,7 +17,8 @@ import { ProductService } from '../../services/product.service';
 @Component({
   selector: 'app-product-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, ScrollingModule],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="product-list-container">
       <!-- Search and Filters -->
@@ -136,13 +138,18 @@ import { ProductService } from '../../services/product.service';
           </p>
         </div>
 
-        <!-- Products Grid -->
+        <!-- Products Grid with Virtual Scrolling -->
         <div class="products-grid" *ngIf="products.length > 0">
-          <div 
-            *ngFor="let product of products; trackBy: trackByProductId" 
-            class="product-card"
-            (click)="onProductClick(product)"
+          <cdk-virtual-scroll-viewport 
+            itemSize="320" 
+            class="virtual-scroll-viewport"
+            *ngIf="useVirtualScrolling && products.length > 50; else regularGrid"
           >
+            <div 
+              *cdkVirtualFor="let product of products; trackBy: trackByProductId" 
+              class="product-card"
+              (click)="onProductClick(product)"
+            >
             <!-- Product Image -->
             <div class="product-image">
               <img 
@@ -192,7 +199,66 @@ import { ProductService } from '../../services/product.service';
                 View Details
               </button>
             </div>
-          </div>
+          </cdk-virtual-scroll-viewport>
+          
+          <!-- Regular Grid Template -->
+          <ng-template #regularGrid>
+            <div 
+              *ngFor="let product of products; trackBy: trackByProductId" 
+              class="product-card"
+              (click)="onProductClick(product)"
+            >
+              <!-- Product Image -->
+              <div class="product-image">
+                <img 
+                  [src]="getPrimaryImageUrl(product)" 
+                  [alt]="product.name"
+                  (error)="onImageError($event)"
+                  loading="lazy"
+                >
+                <div class="product-badges">
+                  <span *ngIf="!product.inventory?.isInStock" class="badge out-of-stock">
+                    Out of Stock
+                  </span>
+                  <span *ngIf="product.inventory?.isLowStock && product.inventory?.isInStock" class="badge low-stock">
+                    Low Stock
+                  </span>
+                </div>
+              </div>
+
+              <!-- Product Info -->
+              <div class="product-info">
+                <h3 class="product-name">{{ product.name }}</h3>
+                <p class="product-brand" *ngIf="product.brand">{{ product.brand }}</p>
+                <p class="product-category">{{ product.category.name }}</p>
+                <div class="product-price">
+                  <span class="price">\${{ product.price | number:'1.2-2' }}</span>
+                </div>
+                <p class="product-description" *ngIf="product.description">
+                  {{ product.description | slice:0:100 }}
+                  <span *ngIf="product.description && product.description.length > 100">...</span>
+                </p>
+              </div>
+
+              <!-- Product Actions -->
+              <div class="product-actions">
+                <button 
+                  class="btn btn-primary btn-sm"
+                  [disabled]="!product.inventory?.isInStock"
+                  (click)="onAddToCart(product, $event)"
+                >
+                  <i class="fas fa-shopping-cart"></i>
+                  {{ product.inventory?.isInStock ? 'Add to Cart' : 'Out of Stock' }}
+                </button>
+                <button 
+                  class="btn btn-outline btn-sm"
+                  (click)="onViewDetails(product, $event)"
+                >
+                  View Details
+                </button>
+              </div>
+            </div>
+          </ng-template>
         </div>
 
         <!-- No Products Found -->
@@ -241,6 +307,7 @@ export class ProductListComponent implements OnInit, OnDestroy {
   @Input() categoryId?: number;
   @Input() searchTerm?: string;
   @Input() pageSize: number = 20;
+  @Input() useVirtualScrolling: boolean = true;
   
   @Output() productSelected = new EventEmitter<Product>();
   @Output() addToCart = new EventEmitter<Product>();
@@ -261,7 +328,8 @@ export class ProductListComponent implements OnInit, OnDestroy {
 
   constructor(
     private productService: ProductService,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private cdr: ChangeDetectorRef
   ) {
     this.searchForm = this.createSearchForm();
   }
@@ -334,6 +402,7 @@ export class ProductListComponent implements OnInit, OnDestroy {
       this.categories = categories;
       this.brands = brands;
       this.priceRange = priceRange;
+      this.cdr.markForCheck();
     });
 
     // Perform initial search
@@ -421,11 +490,13 @@ export class ProductListComponent implements OnInit, OnDestroy {
         this.searchResponse = response;
         this.products = response.content;
         this.loading = false;
+        this.cdr.markForCheck();
       },
       error: (error) => {
         this.error = error.message;
         this.loading = false;
         this.products = [];
+        this.cdr.markForCheck();
       }
     });
   }

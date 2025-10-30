@@ -9,6 +9,10 @@ import com.ecommerce.product.entity.ProductInventory;
 import com.ecommerce.product.repository.CategoryRepository;
 import com.ecommerce.product.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -62,6 +66,7 @@ public class ProductService {
     }
     
     @Transactional(readOnly = true)
+    @Cacheable(value = "products", key = "#id")
     public ProductResponse getProductById(Long id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
@@ -69,12 +74,19 @@ public class ProductService {
     }
     
     @Transactional(readOnly = true)
+    @Cacheable(value = "products-by-sku", key = "#sku")
     public ProductResponse getProductBySku(String sku) {
         Product product = productRepository.findBySku(sku)
                 .orElseThrow(() -> new RuntimeException("Product not found with SKU: " + sku));
         return new ProductResponse(product);
     }
     
+    @Caching(evict = {
+        @CacheEvict(value = "products", key = "#id"),
+        @CacheEvict(value = "products-by-sku", key = "#result.sku"),
+        @CacheEvict(value = "product-catalog", allEntries = true),
+        @CacheEvict(value = "product-search", allEntries = true)
+    })
     public ProductResponse updateProduct(Long id, ProductRequest request) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
@@ -113,6 +125,7 @@ public class ProductService {
     }
     
     @Transactional(readOnly = true)
+    @Cacheable(value = "product-catalog", key = "#page + '_' + #size + '_' + #sortBy + '_' + #sortDirection")
     public Page<ProductResponse> getAllProducts(int page, int size, String sortBy, String sortDirection) {
         Sort sort = Sort.by(Sort.Direction.fromString(sortDirection), sortBy);
         Pageable pageable = PageRequest.of(page, size, sort);
@@ -221,11 +234,13 @@ public class ProductService {
     }
     
     @Transactional(readOnly = true)
+    @Cacheable(value = "product-brands")
     public List<String> getAvailableBrands() {
         return productRepository.findDistinctBrands();
     }
     
     @Transactional(readOnly = true)
+    @Cacheable(value = "product-price-range")
     public Object[] getPriceRange() {
         return productRepository.findPriceRange();
     }
