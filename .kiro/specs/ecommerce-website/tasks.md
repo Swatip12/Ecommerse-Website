@@ -118,21 +118,32 @@
     - Implement low stock alerts for admin users
     - _Requirements: 1.5, 5.2, 5.3_
 
-- [ ] 5. Build shopping cart functionality
-  - [ ] 5.1 Implement Cart REST API endpoints
+- [x] 5. Build shopping cart functionality
+
+
+
+
+
+  - [x] 5.1 Implement Cart REST API endpoints
+
+
     - Create CartController with add/remove/update operations
     - Add cart persistence for registered users
     - Implement session-based cart for guest users
     - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5_
   
-  - [ ] 5.2 Create Angular shopping cart components
+  - [x] 5.2 Create Angular shopping cart components
+
+
     - Build CartComponent with item management
     - Implement CartSummaryComponent for checkout preview
     - Add CartIconComponent with item count display
     - Create quantity validation and inventory checking
     - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5_
   
-  - [ ] 5.3 Implement cart state management with NgRx
+  - [x] 5.3 Implement cart state management with NgRx
+
+
     - Create cart actions, reducers, and effects
     - Add cart synchronization across browser tabs
     - Implement cart persistence in local storage

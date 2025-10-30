@@ -1,0 +1,15 @@
+<button 
+  mat-icon-button 
+  class="cart-icon-button"
+  (click)="onCartClick()"
+  [attr.aria-label]="'Shopping cart with ' + cartItemCount + ' items'">
+  
+  <mat-icon class="cart-icon">shopping_cart</mat-icon>
+  
+  <span 
+    *ngIf="hasItems" 
+    class="cart-badge"
+    [attr.aria-label]="cartItemCount + ' items in cart'">
+    {{ displayCount }}
+  </span>
+</button>

@@ -1,0 +1,188 @@
+<div class="cart-container">
+  <div class="cart-header">
+    <h1>Shopping Cart</h1>
+    <div class="cart-actions" *ngIf="hasItems && !loading">
+      <button 
+        mat-stroked-button 
+        color="warn" 
+        (click)="clearCart()"
+        [disabled]="isProcessing">
+        <mat-icon>delete_sweep</mat-icon>
+        Clear Cart
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-container">
+    <mat-spinner diameter="50"></mat-spinner>
+    <p>Loading your cart...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error" class="error-container">
+    <mat-icon color="warn">error</mat-icon>
+    <p>{{ error }}</p>
+    <button mat-button color="primary" (click)="loadCart()">
+      <mat-icon>refresh</mat-icon>
+      Retry
+    </button>
+  </div>
+
+  <!-- Empty Cart State -->
+  <div *ngIf="isEmpty && !loading && !error" class="empty-cart">
+    <mat-icon class="empty-cart-icon">shopping_cart</mat-icon>
+    <h2>Your cart is empty</h2>
+    <p>Looks like you haven't added any items to your cart yet.</p>
+    <button 
+      mat-raised-button 
+      color="primary" 
+      (click)="continueShopping()">
+      <mat-icon>storefront</mat-icon>
+      Continue Shopping
+    </button>
+  </div>
+
+  <!-- Cart Items -->
+  <div *ngIf="hasItems && !loading" class="cart-content">
+    <div class="cart-items">
+      <div 
+        *ngFor="let item of cartSummary.items; trackBy: trackByProductId" 
+        class="cart-item"
+        [class.updating]="isItemUpdating(item.productId)"
+        [class.removing]="isItemRemoving(item.productId)">
+        
+        <div class="item-image">
+          <img 
+            [src]="item.imageUrl || '/assets/images/no-image.png'" 
+            [alt]="item.productName"
+            loading="lazy">
+        </div>
+
+        <div class="item-details">
+          <h3 class="item-name">{{ item.productName }}</h3>
+          <p class="item-sku">SKU: {{ item.productSku }}</p>
+          <p class="item-price">${{ item.unitPrice | number:'1.2-2' }}</p>
+        </div>
+
+        <div class="item-quantity">
+          <label for="quantity-{{ item.productId }}" class="quantity-label">
+            Quantity:
+          </label>
+          <div class="quantity-controls">
+            <button 
+              mat-icon-button 
+              (click)="decrementQuantity(item)"
+              [disabled]="item.quantity <= 1 || isItemUpdating(item.productId)"
+              aria-label="Decrease quantity">
+              <mat-icon>remove</mat-icon>
+            </button>
+            
+            <input 
+              type="number" 
+              [id]="'quantity-' + item.productId"
+              [value]="item.quantity"
+              (change)="onQuantityChange(item, $event)"
+              [disabled]="isItemUpdating(item.productId)"
+              min="1"
+              max="99"
+              class="quantity-input">
+            
+            <button 
+              mat-icon-button 
+              (click)="incrementQuantity(item)"
+              [disabled]="isItemUpdating(item.productId)"
+              aria-label="Increase quantity">
+              <mat-icon>add</mat-icon>
+            </button>
+          </div>
+        </div>
+
+        <div class="item-total">
+          <p class="total-price">${{ item.totalPrice | number:'1.2-2' }}</p>
+        </div>
+
+        <div class="item-actions">
+          <button 
+            mat-icon-button 
+            color="warn"
+            (click)="removeItem(item)"
+            [disabled]="isItemRemoving(item.productId)"
+            [attr.aria-label]="'Remove ' + item.productName + ' from cart'">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </div>
+
+        <!-- Loading overlay for individual items -->
+        <div *ngIf="isItemUpdating(item.productId) || isItemRemoving(item.productId)" 
+             class="item-loading-overlay">
+          <mat-spinner diameter="24"></mat-spinner>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cart Summary -->
+    <div class="cart-summary">
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title>Order Summary</mat-card-title>
+        </mat-card-header>
+        
+        <mat-card-content>
+          <div class="summary-row">
+            <span>Subtotal ({{ cartSummary.totalItems }} items):</span>
+            <span>${{ cartSummary.subtotal | number:'1.2-2' }}</span>
+          </div>
+          
+          <div class="summary-row">
+            <span>Estimated Tax:</span>
+            <span>${{ cartSummary.estimatedTax | number:'1.2-2' }}</span>
+          </div>
+          
+          <div class="summary-row">
+            <span>Shipping:</span>
+            <span>
+              <ng-container *ngIf="cartSummary.estimatedShipping === 0; else shippingCost">
+                FREE
+              </ng-container>
+              <ng-template #shippingCost>
+                ${{ cartSummary.estimatedShipping | number:'1.2-2' }}
+              </ng-template>
+            </span>
+          </div>
+          
+          <mat-divider></mat-divider>
+          
+          <div class="summary-row total-row">
+            <span><strong>Total:</strong></span>
+            <span><strong>${{ cartSummary.estimatedTotal | number:'1.2-2' }}</strong></span>
+          </div>
+          
+          <div class="shipping-note" *ngIf="cartSummary.estimatedShipping > 0">
+            <mat-icon>info</mat-icon>
+            <span>Free shipping on orders over $50</span>
+          </div>
+        </mat-card-content>
+        
+        <mat-card-actions>
+          <button 
+            mat-raised-button 
+            color="primary" 
+            class="checkout-button"
+            (click)="proceedToCheckout()"
+            [disabled]="isEmpty || isProcessing">
+            <mat-icon>payment</mat-icon>
+            Proceed to Checkout
+          </button>
+          
+          <button 
+            mat-stroked-button 
+            (click)="continueShopping()">
+            <mat-icon>storefront</mat-icon>
+            Continue Shopping
+          </button>
+        </mat-card-actions>
+      </mat-card>
+    </div>
+  </div>
+</div>

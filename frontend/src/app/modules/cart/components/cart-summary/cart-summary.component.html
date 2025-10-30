@@ -1,0 +1,116 @@
+<mat-card [class.compact]="compact">
+  <mat-card-header *ngIf="!compact">
+    <mat-card-title>Order Summary</mat-card-title>
+  </mat-card-header>
+  
+  <mat-card-content>
+    <!-- Items Summary -->
+    <div class="summary-row" *ngIf="hasItems">
+      <span>
+        Subtotal 
+        <ng-container *ngIf="!compact">
+          ({{ cartSummary.totalItems }} 
+          {{ cartSummary.totalItems === 1 ? 'item' : 'items' }})
+        </ng-container>:
+      </span>
+      <span>${{ cartSummary.subtotal | number:'1.2-2' }}</span>
+    </div>
+    
+    <!-- Tax -->
+    <div class="summary-row" *ngIf="hasItems && !compact">
+      <span>Estimated Tax:</span>
+      <span>${{ cartSummary.estimatedTax | number:'1.2-2' }}</span>
+    </div>
+    
+    <!-- Shipping -->
+    <div class="summary-row" *ngIf="hasItems">
+      <span>Shipping:</span>
+      <span>
+        <ng-container *ngIf="isFreeShipping; else shippingCost">
+          <span class="free-shipping">FREE</span>
+        </ng-container>
+        <ng-template #shippingCost>
+          ${{ cartSummary.estimatedShipping | number:'1.2-2' }}
+        </ng-template>
+      </span>
+    </div>
+    
+    <!-- Free Shipping Progress -->
+    <div class="free-shipping-progress" *ngIf="!isFreeShipping && isCloseToFreeShipping && !compact">
+      <div class="progress-info">
+        <mat-icon>local_shipping</mat-icon>
+        <span>Add ${{ amountForFreeShipping | number:'1.2-2' }} more for FREE shipping!</span>
+      </div>
+      <mat-progress-bar 
+        mode="determinate" 
+        [value]="(cartSummary.subtotal / freeShippingThreshold) * 100"
+        color="primary">
+      </mat-progress-bar>
+    </div>
+    
+    <mat-divider *ngIf="hasItems"></mat-divider>
+    
+    <!-- Total -->
+    <div class="summary-row total-row" *ngIf="hasItems">
+      <span><strong>Total:</strong></span>
+      <span><strong>${{ cartSummary.estimatedTotal | number:'1.2-2' }}</strong></span>
+    </div>
+    
+    <!-- Empty Cart Message -->
+    <div class="empty-message" *ngIf="isEmpty">
+      <mat-icon>shopping_cart</mat-icon>
+      <p>Your cart is empty</p>
+    </div>
+    
+    <!-- Shipping Info -->
+    <div class="shipping-info" *ngIf="hasItems && !compact">
+      <div class="info-item" *ngIf="isFreeShipping">
+        <mat-icon color="primary">check_circle</mat-icon>
+        <span>Free shipping included</span>
+      </div>
+      <div class="info-item">
+        <mat-icon>local_shipping</mat-icon>
+        <span>Estimated delivery: 3-5 business days</span>
+      </div>
+      <div class="info-item">
+        <mat-icon>security</mat-icon>
+        <span>Secure checkout</span>
+      </div>
+    </div>
+  </mat-card-content>
+  
+  <mat-card-actions *ngIf="hasItems">
+    <button 
+      *ngIf="showCheckoutButton"
+      mat-raised-button 
+      color="primary" 
+      class="checkout-button"
+      (click)="onCheckout()">
+      <mat-icon>payment</mat-icon>
+      <ng-container *ngIf="compact; else fullCheckoutText">
+        Checkout
+      </ng-container>
+      <ng-template #fullCheckoutText>
+        Proceed to Checkout
+      </ng-template>
+    </button>
+    
+    <button 
+      *ngIf="showContinueShoppingButton"
+      mat-stroked-button 
+      (click)="onContinueShopping()">
+      <mat-icon>storefront</mat-icon>
+      Continue Shopping
+    </button>
+  </mat-card-actions>
+  
+  <mat-card-actions *ngIf="isEmpty && showContinueShoppingButton">
+    <button 
+      mat-raised-button 
+      color="primary"
+      (click)="onContinueShopping()">
+      <mat-icon>storefront</mat-icon>
+      Start Shopping
+    </button>
+  </mat-card-actions>
+</mat-card>

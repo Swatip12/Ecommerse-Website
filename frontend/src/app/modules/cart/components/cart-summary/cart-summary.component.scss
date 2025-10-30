@@ -1,0 +1,188 @@
+mat-card {
+  &.compact {
+    mat-card-content {
+      padding: 16px;
+    }
+    
+    .summary-row {
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+    
+    .total-row {
+      font-size: 16px;
+    }
+    
+    mat-card-actions {
+      padding: 8px 16px 16px;
+      
+      .checkout-button {
+        height: 40px;
+        font-size: 14px;
+      }
+    }
+  }
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  font-size: 14px;
+  
+  &.total-row {
+    margin-top: 16px;
+    margin-bottom: 0;
+    font-size: 18px;
+    padding-top: 12px;
+  }
+  
+  .free-shipping {
+    color: #4caf50;
+    font-weight: 500;
+  }
+}
+
+.free-shipping-progress {
+  margin: 16px 0;
+  padding: 12px;
+  background-color: #e8f5e8;
+  border-radius: 8px;
+  border-left: 4px solid #4caf50;
+  
+  .progress-info {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: 14px;
+    color: #2e7d32;
+    
+    mat-icon {
+      margin-right: 8px;
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+    }
+  }
+  
+  mat-progress-bar {
+    height: 6px;
+    border-radius: 3px;
+  }
+}
+
+.empty-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 20px;
+  text-align: center;
+  color: #666;
+  
+  mat-icon {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+    margin-bottom: 16px;
+    color: #ccc;
+  }
+  
+  p {
+    margin: 0;
+    font-size: 16px;
+  }
+}
+
+.shipping-info {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid #e0e0e0;
+  
+  .info-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: 13px;
+    color: #666;
+    
+    &:last-child {
+      margin-bottom: 0;
+    }
+    
+    mat-icon {
+      margin-right: 8px;
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+      
+      &[color="primary"] {
+        color: #4caf50;
+      }
+    }
+  }
+}
+
+mat-card-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  
+  .checkout-button {
+    width: 100%;
+    height: 48px;
+    font-size: 16px;
+    font-weight: 500;
+    
+    mat-icon {
+      margin-right: 8px;
+    }
+  }
+  
+  button:not(.checkout-button) {
+    mat-icon {
+      margin-right: 8px;
+    }
+  }
+}
+
+// Responsive design
+@media (max-width: 480px) {
+  .summary-row {
+    font-size: 13px;
+    
+    &.total-row {
+      font-size: 16px;
+    }
+  }
+  
+  .free-shipping-progress {
+    margin: 12px 0;
+    padding: 8px;
+    
+    .progress-info {
+      font-size: 13px;
+    }
+  }
+  
+  .shipping-info {
+    .info-item {
+      font-size: 12px;
+    }
+  }
+}
+
+// Animation for summary updates
+.summary-row {
+  transition: all 0.3s ease;
+}
+
+.total-row {
+  animation: highlight 0.5s ease-in-out;
+}
+
+@keyframes highlight {
+  0% { background-color: transparent; }
+  50% { background-color: #e3f2fd; }
+  100% { background-color: transparent; }
+}
