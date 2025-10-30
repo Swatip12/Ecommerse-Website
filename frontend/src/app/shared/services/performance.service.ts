@@ -1,5 +1,5 @@
 import { Injectable, OnDestroy } from '@angular/core';
-import { SwUpdate, VersionReadyEvent } from '@angular/service-worker';
+// import { SwUpdate, VersionReadyEvent } from '@angular/service-worker';
 import { BehaviorSubject, Subject, fromEvent, merge } from 'rxjs';
 import { takeUntil, filter, map, debounceTime } from 'rxjs/operators';
 
@@ -12,8 +12,8 @@ export class PerformanceService implements OnDestroy {
   private networkStatus$ = new BehaviorSubject<boolean>(navigator.onLine);
   private performanceMetrics$ = new BehaviorSubject<PerformanceMetrics | null>(null);
 
-  constructor(private swUpdate: SwUpdate) {
-    this.initializeServiceWorker();
+  constructor() {
+    // this.initializeServiceWorker();
     this.initializeNetworkMonitoring();
     this.initializePerformanceMonitoring();
   }
@@ -25,22 +25,23 @@ export class PerformanceService implements OnDestroy {
 
   // Service Worker Management
   private initializeServiceWorker(): void {
-    if (this.swUpdate.isEnabled) {
-      // Check for updates
-      this.swUpdate.versionUpdates
-        .pipe(
-          filter((evt): evt is VersionReadyEvent => evt.type === 'VERSION_READY'),
-          takeUntil(this.destroy$)
-        )
-        .subscribe(() => {
-          this.updateAvailable$.next(true);
-        });
+    // Service worker functionality disabled for now
+    // if (this.swUpdate.isEnabled) {
+    //   // Check for updates
+    //   this.swUpdate.versionUpdates
+    //     .pipe(
+    //       filter((evt): evt is VersionReadyEvent => evt.type === 'VERSION_READY'),
+    //       takeUntil(this.destroy$)
+    //     )
+    //     .subscribe(() => {
+    //       this.updateAvailable$.next(true);
+    //     });
 
-      // Check for updates every 6 hours
-      setInterval(() => {
-        this.swUpdate.checkForUpdate();
-      }, 6 * 60 * 60 * 1000);
-    }
+    //   // Check for updates every 6 hours
+    //   setInterval(() => {
+    //     this.swUpdate.checkForUpdate();
+    //   }, 6 * 60 * 60 * 1000);
+    // }
   }
 
   // Network Status Monitoring
@@ -168,12 +169,13 @@ export class PerformanceService implements OnDestroy {
   }
 
   activateUpdate(): Promise<boolean> {
-    if (this.swUpdate.isEnabled) {
-      return this.swUpdate.activateUpdate().then(() => {
-        window.location.reload();
-        return true;
-      });
-    }
+    // Service worker functionality disabled for now
+    // if (this.swUpdate.isEnabled) {
+    //   return this.swUpdate.activateUpdate().then(() => {
+    //     window.location.reload();
+    //     return true;
+    //   });
+    // }
     return Promise.resolve(false);
   }
 

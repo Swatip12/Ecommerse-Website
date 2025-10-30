@@ -206,8 +206,8 @@ export class E2EWorkflowService {
   private testProductBrowsing(): Observable<string> {
     return this.productService.getAllProducts(0, 10).pipe(
       map(products => {
-        if (products && products.length > 0) {
-          return `Successfully browsed ${products.length} products`;
+        if (products && products.content && products.content.length > 0) {
+          return `Successfully browsed ${products.content.length} products`;
         } else {
           throw new Error('No products found');
         }
@@ -216,10 +216,10 @@ export class E2EWorkflowService {
   }
 
   private testProductSearch(): Observable<string> {
-    return this.productService.searchProducts('test').pipe(
+    return this.productService.searchProducts({ searchTerm: 'test', page: 0, size: 10 }).pipe(
       map(results => {
         if (results) {
-          return `Product search completed - ${results.length || 0} results found`;
+          return `Product search completed - ${results.content?.length || 0} results found`;
         } else {
           throw new Error('Product search failed');
         }
@@ -230,8 +230,8 @@ export class E2EWorkflowService {
   private testProductDetails(): Observable<string> {
     return this.productService.getAllProducts(0, 1).pipe(
       switchMap(products => {
-        if (products && products.length > 0) {
-          const product = products[0];
+        if (products && products.content && products.content.length > 0) {
+          const product = products.content[0];
           return of(`Product details loaded for: ${product.name}`);
         } else {
           return of('No products available for detail test');
@@ -244,7 +244,7 @@ export class E2EWorkflowService {
     return this.cartService.getCartSummary().pipe(
       map(cart => {
         if (cart) {
-          return `Cart accessed successfully - ${cart.itemCount || 0} items, total: ${cart.totalAmount || 0}`;
+          return `Cart accessed successfully - ${cart.totalItems || 0} items, total: ${cart.estimatedTotal || 0}`;
         } else {
           throw new Error('Cart access failed');
         }
@@ -258,9 +258,9 @@ export class E2EWorkflowService {
   }
 
   private testRealtimeFeatures(): Observable<string> {
-    return this.realtimeConnectionService.connectionStatus$.pipe(
+    return this.realtimeConnectionService.getStatus().pipe(
       map(status => {
-        if (status === 'connected') {
+        if (status.overallConnected) {
           return 'Real-time features are active and connected';
         } else {
           return `Real-time connection status: ${status}`;
@@ -288,7 +288,7 @@ export class E2EWorkflowService {
 
   private testProductManagement(): Observable<string> {
     return this.productService.getAllProducts(0, 1).pipe(
-      map(products => `Product management interface tested - ${products.length || 0} products available`)
+      map(products => `Product management interface tested - ${products.content?.length || 0} products available`)
     );
   }
 
@@ -300,9 +300,9 @@ export class E2EWorkflowService {
     // Test inventory by checking product availability
     return this.productService.getAllProducts(0, 5).pipe(
       map(products => {
-        if (products && products.length > 0) {
-          const inStockCount = products.filter(p => p.quantityAvailable > 0).length;
-          return `Inventory monitoring tested - ${inStockCount}/${products.length} products in stock`;
+        if (products && products.content && products.content.length > 0) {
+          const inStockCount = products.content.filter(p => p.inventory && p.inventory.quantityAvailable > 0).length;
+          return `Inventory monitoring tested - ${inStockCount}/${products.content.length} products in stock`;
         } else {
           return 'Inventory monitoring test completed';
         }
@@ -338,15 +338,15 @@ export class E2EWorkflowService {
       this.cartService.getCartSummary()
     ]).pipe(
       map(([products, cart]) => {
-        return `Database operations verified - Products: ${products.length || 0}, Cart: ${cart?.itemCount || 0} items`;
+        return `Database operations verified - Products: ${(products as any)?.length || 0}, Cart: ${cart?.totalItems || 0} items`;
       })
     );
   }
 
   private testRealtimeCommunication(): Observable<string> {
-    return this.realtimeConnectionService.connectionStatus$.pipe(
+    return this.realtimeConnectionService.getStatus().pipe(
       map(status => {
-        if (status === 'connected') {
+        if (status.overallConnected) {
           return 'Real-time communication verified - WebSocket connected';
         } else {
           return `Real-time communication status: ${status}`;
@@ -359,7 +359,7 @@ export class E2EWorkflowService {
     // Test integration between different components
     return this.productService.getAllProducts(0, 1).pipe(
       switchMap(products => {
-        if (products && products.length > 0) {
+        if (products && products.content && products.content.length > 0) {
           // Test if we can get cart after browsing products
           return this.cartService.getCartSummary().pipe(
             map(cart => 'Cross-component integration verified - Product to Cart flow working')

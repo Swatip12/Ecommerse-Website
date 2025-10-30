@@ -1,7 +1,7 @@
 import { Injectable, NgZone } from '@angular/core';
 import { Client, IMessage, StompConfig, StompSubscription } from '@stomp/stompjs';
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
-import * as SockJS from 'sockjs-client';
+import SockJS from 'sockjs-client';
 
 export interface WebSocketMessage {
   destination: string;
