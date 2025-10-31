@@ -1,4 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Subject, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs';
 import { FormControl } from '@angular/forms';
@@ -7,6 +9,8 @@ import { Order, OrderStatus, PagedResponse } from '../../models/order.models';
 
 @Component({
   selector: 'app-order-history',
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule, FormsModule],
   templateUrl: './order-history.component.html',
   styleUrls: ['./order-history.component.scss']
 })
@@ -220,5 +224,9 @@ export class OrderHistoryComponent implements OnInit, OnDestroy {
 
   refresh(): void {
     this.loadOrders();
+  }
+
+  getEndIndex(): number {
+    return Math.min((this.currentPage + 1) * this.pageSize, this.totalElements);
   }
 }

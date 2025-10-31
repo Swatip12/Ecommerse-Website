@@ -1,69 +1,54 @@
 import { Routes } from '@angular/router';
-import { AuthGuard } from './modules/user/guards/auth.guard';
-import { GuestGuard } from './modules/user/guards/guest.guard';
-import { RoleGuard } from './modules/user/guards/role.guard';
-import { UserRole } from './modules/user/models/auth.models';
 
 export const routes: Routes = [
   {
     path: '',
-    redirectTo: '/dashboard',
+    redirectTo: '/status',
     pathMatch: 'full'
   },
   {
-    path: 'auth',
-    children: [
-      {
-        path: 'login',
-        loadComponent: () => import('./modules/user/components/login/login.component').then(m => m.LoginComponent),
-        canActivate: [GuestGuard]
-      },
-      {
-        path: 'register',
-        loadComponent: () => import('./modules/user/components/register/register.component').then(m => m.RegisterComponent),
-        canActivate: [GuestGuard]
-      }
-    ]
+    path: 'status',
+    loadComponent: () => import('./simple-status.component').then(m => m.SimpleStatusComponent)
+  },
+  {
+    path: 'register',
+    loadComponent: () => import('./user-register.component').then(m => m.UserRegisterComponent)
+  },
+  {
+    path: 'login',
+    loadComponent: () => import('./user-login.component').then(m => m.UserLoginComponent)
+  },
+  {
+    path: 'admin-register',
+    loadComponent: () => import('./admin-register.component').then(m => m.AdminRegisterComponent)
+  },
+  {
+    path: 'test',
+    loadComponent: () => import('./test-page.component').then(m => m.TestPageComponent)
   },
   {
     path: 'dashboard',
-    loadComponent: () => import('./shared/components/dashboard/dashboard.component').then(m => m.DashboardComponent),
-    canActivate: [AuthGuard]
-  },
-  {
-    path: 'admin',
-    loadChildren: () => import('./modules/admin/admin.module').then(m => m.AdminModule),
-    canActivate: [AuthGuard, RoleGuard],
-    data: { roles: [UserRole.ADMIN] }
+    loadComponent: () => import('./shared/components/dashboard/dashboard.component').then(m => m.DashboardComponent)
   },
   {
     path: 'products',
-    loadChildren: () => import('./modules/product/product.module').then(m => m.ProductModule),
-    canActivate: [AuthGuard]
+    loadComponent: () => import('./products-simple.component').then(m => m.ProductsSimpleComponent)
   },
   {
     path: 'cart',
-    loadChildren: () => import('./modules/cart/cart.module').then(m => m.CartModule),
-    canActivate: [AuthGuard]
+    loadComponent: () => import('./cart-placeholder.component').then(m => m.CartPlaceholderComponent)
   },
   {
     path: 'orders',
-    loadChildren: () => import('./modules/order/order.module').then(m => m.OrderModule),
-    canActivate: [AuthGuard]
+    loadComponent: () => import('./orders-placeholder.component').then(m => m.OrdersPlaceholderComponent)
   },
   {
-    path: 'profile',
-    loadChildren: () => import('./modules/user/user.module').then(m => m.UserModule),
-    canActivate: [AuthGuard]
+    path: 'admin',
+    loadComponent: () => import('./admin-placeholder.component').then(m => m.AdminPlaceholderComponent)
   },
   {
     path: 'integration-test',
-    loadComponent: () => import('./integration-test.component').then(m => m.IntegrationTestComponent),
-    canActivate: [AuthGuard]
-  },
-  {
-    path: 'unauthorized',
-    loadComponent: () => import('./shared/components/unauthorized/unauthorized.component').then(m => m.UnauthorizedComponent)
+    loadComponent: () => import('./integration-test.component').then(m => m.IntegrationTestComponent)
   },
   {
     path: '**',

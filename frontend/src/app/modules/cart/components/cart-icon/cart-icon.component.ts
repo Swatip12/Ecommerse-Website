@@ -1,11 +1,22 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatBadgeModule } from '@angular/material/badge';
 import { CartStoreService } from '../../services/cart-store.service';
 
 @Component({
   selector: 'app-cart-icon',
+  standalone: true,
+  imports: [
+    CommonModule,
+    MatButtonModule,
+    MatIconModule,
+    MatBadgeModule
+  ],
   templateUrl: './cart-icon.component.html',
   styleUrls: ['./cart-icon.component.scss']
 })

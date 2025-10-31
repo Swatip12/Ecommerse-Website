@@ -14,6 +14,7 @@ import { MatDialogModule, MatDialog } from '@angular/material/dialog';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatChipsModule } from '@angular/material/chips';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { SelectionModel } from '@angular/cdk/collections';
 import { Router } from '@angular/router';
 
@@ -40,7 +41,8 @@ import { ProductFormComponent } from '../product-form/product-form.component';
     MatDialogModule,
     MatSnackBarModule,
     MatMenuModule,
-    MatChipsModule
+    MatChipsModule,
+    MatProgressSpinnerModule
   ],
   templateUrl: './admin-product-list.component.html',
   styleUrls: ['./admin-product-list.component.scss']
@@ -143,25 +145,11 @@ export class AdminProductListComponent implements OnInit {
   }
 
   loadCategories(): void {
-    this.productService.getCategories().subscribe({
-      next: (categories) => {
-        this.categories = categories;
-      },
-      error: (error) => {
-        console.error('Error loading categories:', error);
-      }
-    });
+    this.categories = this.productService.getCategories();
   }
 
   loadBrands(): void {
-    this.productService.getBrands().subscribe({
-      next: (brands) => {
-        this.brands = brands;
-      },
-      error: (error) => {
-        console.error('Error loading brands:', error);
-      }
-    });
+    this.brands = this.productService.getBrands();
   }
 
   applyFilter(): void {
@@ -294,7 +282,7 @@ export class AdminProductListComponent implements OnInit {
 
   exportToCSV(): void {
     const categoryIds = this.selectedCategory ? [this.selectedCategory] : undefined;
-    const isActive = this.selectedStatus;
+    const isActive = this.selectedStatus !== null ? this.selectedStatus : undefined;
     
     this.adminProductService.exportProductsToCSV(categoryIds, isActive).subscribe({
       next: (csvData) => {

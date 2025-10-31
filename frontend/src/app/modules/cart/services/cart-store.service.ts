@@ -16,35 +16,61 @@ import * as CartSelectors from '../store/cart.selectors';
 export class CartStoreService {
   
   // Observables for components to subscribe to
-  cartSummary$ = this.store.select(CartSelectors.selectCartSummary);
-  cartItems$ = this.store.select(CartSelectors.selectCartItems);
-  cartCount$ = this.store.select(CartSelectors.selectCartCount);
-  cartTotalQuantity$ = this.store.select(CartSelectors.selectCartTotalQuantity);
-  cartSubtotal$ = this.store.select(CartSelectors.selectCartSubtotal);
-  cartTotal$ = this.store.select(CartSelectors.selectCartTotal);
-  cartTax$ = this.store.select(CartSelectors.selectCartTax);
-  cartShipping$ = this.store.select(CartSelectors.selectCartShipping);
+  cartSummary$: Observable<any>;
+  cartItems$: Observable<any>;
+  cartCount$: Observable<any>;
+  cartTotalQuantity$: Observable<any>;
+  cartSubtotal$: Observable<any>;
+  cartTotal$: Observable<any>;
+  cartTax$: Observable<any>;
+  cartShipping$: Observable<any>;
   
   // UI state observables
-  loading$ = this.store.select(CartSelectors.selectCartLoading);
-  error$ = this.store.select(CartSelectors.selectCartError);
-  addingToCart$ = this.store.select(CartSelectors.selectAddingToCart);
-  clearing$ = this.store.select(CartSelectors.selectCartClearing);
-  transferring$ = this.store.select(CartSelectors.selectCartTransferring);
-  validating$ = this.store.select(CartSelectors.selectCartValidating);
-  validationResults$ = this.store.select(CartSelectors.selectValidationResults);
+  loading$: Observable<any>;
+  error$: Observable<any>;
+  addingToCart$: Observable<any>;
+  clearing$: Observable<any>;
+  transferring$: Observable<any>;
+  validating$: Observable<any>;
+  validationResults$: Observable<any>;
   
   // Computed observables
-  isEmpty$ = this.store.select(CartSelectors.selectIsCartEmpty);
-  hasItems$ = this.store.select(CartSelectors.selectHasCartItems);
-  isFreeShipping$ = this.store.select(CartSelectors.selectIsFreeShipping);
-  amountForFreeShipping$ = this.store.select(CartSelectors.selectAmountForFreeShipping);
-  isCloseToFreeShipping$ = this.store.select(CartSelectors.selectIsCloseToFreeShipping);
-  isProcessing$ = this.store.select(CartSelectors.selectIsCartProcessing);
-  canCheckout$ = this.store.select(CartSelectors.selectCanCheckout);
-  cartStatistics$ = this.store.select(CartSelectors.selectCartStatistics);
+  isEmpty$: Observable<any>;
+  hasItems$: Observable<any>;
+  isFreeShipping$: Observable<any>;
+  amountForFreeShipping$: Observable<any>;
+  isCloseToFreeShipping$: Observable<any>;
+  isProcessing$: Observable<any>;
+  canCheckout$: Observable<any>;
+  cartStatistics$: Observable<any>;
 
   constructor(private store: Store) {
+    // Initialize observables
+    this.cartSummary$ = this.store.select(CartSelectors.selectCartSummary);
+    this.cartItems$ = this.store.select(CartSelectors.selectCartItems);
+    this.cartCount$ = this.store.select(CartSelectors.selectCartCount);
+    this.cartTotalQuantity$ = this.store.select(CartSelectors.selectCartTotalQuantity);
+    this.cartSubtotal$ = this.store.select(CartSelectors.selectCartSubtotal);
+    this.cartTotal$ = this.store.select(CartSelectors.selectCartTotal);
+    this.cartTax$ = this.store.select(CartSelectors.selectCartTax);
+    this.cartShipping$ = this.store.select(CartSelectors.selectCartShipping);
+    
+    this.loading$ = this.store.select(CartSelectors.selectCartLoading);
+    this.error$ = this.store.select(CartSelectors.selectCartError);
+    this.addingToCart$ = this.store.select(CartSelectors.selectAddingToCart);
+    this.clearing$ = this.store.select(CartSelectors.selectCartClearing);
+    this.transferring$ = this.store.select(CartSelectors.selectCartTransferring);
+    this.validating$ = this.store.select(CartSelectors.selectCartValidating);
+    this.validationResults$ = this.store.select(CartSelectors.selectValidationResults);
+    
+    this.isEmpty$ = this.store.select(CartSelectors.selectIsCartEmpty);
+    this.hasItems$ = this.store.select(CartSelectors.selectHasCartItems);
+    this.isFreeShipping$ = this.store.select(CartSelectors.selectIsFreeShipping);
+    this.amountForFreeShipping$ = this.store.select(CartSelectors.selectAmountForFreeShipping);
+    this.isCloseToFreeShipping$ = this.store.select(CartSelectors.selectIsCloseToFreeShipping);
+    this.isProcessing$ = this.store.select(CartSelectors.selectIsCartProcessing);
+    this.canCheckout$ = this.store.select(CartSelectors.selectCanCheckout);
+    this.cartStatistics$ = this.store.select(CartSelectors.selectCartStatistics);
     // Initialize cart on service creation
     this.initializeCart();
   }

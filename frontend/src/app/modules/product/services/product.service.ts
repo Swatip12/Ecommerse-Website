@@ -30,6 +30,28 @@ export class ProductService {
 
   constructor(private http: HttpClient) {
     this.loadFiltersData();
+    this.initializeMockData();
+  }
+
+  private initializeMockData(): void {
+    // Mock categories
+    const mockCategories: Category[] = [
+      { id: 1, name: 'Electronics', description: 'Electronic devices and gadgets', isActive: true, createdAt: '2024-01-01', updatedAt: '2024-01-01' },
+      { id: 2, name: 'Fashion', description: 'Clothing and accessories', isActive: true, createdAt: '2024-01-01', updatedAt: '2024-01-01' },
+      { id: 3, name: 'Home & Garden', description: 'Home improvement and garden supplies', isActive: true, createdAt: '2024-01-01', updatedAt: '2024-01-01' },
+      { id: 4, name: 'Sports & Gaming', description: 'Sports equipment and gaming', isActive: true, createdAt: '2024-01-01', updatedAt: '2024-01-01' }
+    ];
+
+    // Mock brands
+    const mockBrands = ['Apple', 'Samsung', 'Nike', 'Adidas', 'Sony', 'LG', 'Dell', 'HP'];
+
+    // Mock price range
+    const mockPriceRange: PriceRange = { minPrice: 10, maxPrice: 2000 };
+
+    // Set mock data
+    this.categoriesSubject.next(mockCategories);
+    this.brandsSubject.next(mockBrands);
+    this.priceRangeSubject.next(mockPriceRange);
   }
 
   // Product CRUD operations
@@ -60,19 +82,199 @@ export class ProductService {
 
   // Product search and listing
   getAllProducts(page: number = 0, size: number = 20, sortBy: string = 'name', sortDirection: string = 'asc'): Observable<ProductSearchResponse> {
-    const params = new HttpParams()
-      .set('page', page.toString())
-      .set('size', size.toString())
-      .set('sortBy', sortBy)
-      .set('sortDirection', sortDirection);
-
-    return this.http.get<ProductSearchResponse>(this.API_URL, { params })
-      .pipe(catchError(this.handleError));
+    // Use the same mock data as searchProducts
+    const searchRequest: ProductSearchRequest = {
+      page,
+      size,
+      sortBy,
+      sortDirection
+    };
+    return this.searchProducts(searchRequest);
   }
 
   searchProducts(searchRequest: ProductSearchRequest): Observable<ProductSearchResponse> {
-    return this.http.post<ProductSearchResponse>(`${this.API_URL}/search`, searchRequest)
-      .pipe(catchError(this.handleError));
+    // Return mock data for development
+    return new Observable(observer => {
+      setTimeout(() => {
+        const mockProducts = this.generateMockProducts();
+        const filteredProducts = this.filterMockProducts(mockProducts, searchRequest);
+        
+        const response: ProductSearchResponse = {
+          content: filteredProducts.slice(0, searchRequest.size || 20),
+          totalElements: filteredProducts.length,
+          totalPages: Math.ceil(filteredProducts.length / (searchRequest.size || 20)),
+          size: searchRequest.size || 20,
+          number: searchRequest.page || 0,
+          numberOfElements: Math.min(filteredProducts.length, searchRequest.size || 20),
+          first: (searchRequest.page || 0) === 0,
+          last: (searchRequest.page || 0) >= Math.ceil(filteredProducts.length / (searchRequest.size || 20)) - 1
+        };
+        
+        observer.next(response);
+        observer.complete();
+      }, 500); // Simulate network delay
+    });
+  }
+
+  private generateMockProducts(): Product[] {
+    const categories = this.categoriesSubject.value;
+    const brands = this.brandsSubject.value;
+    
+    return [
+      {
+        id: 1,
+        sku: 'IPHONE15-128',
+        name: 'iPhone 15 Pro 128GB',
+        description: 'Latest iPhone with advanced camera system and A17 Pro chip',
+        price: 999.99,
+        category: categories[0],
+        brand: 'Apple',
+        isActive: true,
+        createdAt: '2024-01-01',
+        updatedAt: '2024-01-01',
+        inventory: { productId: 1, quantityAvailable: 50, quantityReserved: 5, reorderLevel: 10, lastUpdated: '2024-01-01', isInStock: true, isLowStock: false },
+        images: [{ id: 1, imageUrl: 'https://via.placeholder.com/300x300/007bff/ffffff?text=iPhone+15', displayOrder: 1, isPrimary: true, createdAt: '2024-01-01' }]
+      },
+      {
+        id: 2,
+        sku: 'SAMSUNG-S24',
+        name: 'Samsung Galaxy S24 Ultra',
+        description: 'Premium Android smartphone with S Pen and advanced AI features',
+        price: 1199.99,
+        category: categories[0],
+        brand: 'Samsung',
+        isActive: true,
+        createdAt: '2024-01-01',
+        updatedAt: '2024-01-01',
+        inventory: { productId: 2, quantityAvailable: 30, quantityReserved: 3, reorderLevel: 10, lastUpdated: '2024-01-01', isInStock: true, isLowStock: false },
+        images: [{ id: 2, imageUrl: 'https://via.placeholder.com/300x300/28a745/ffffff?text=Galaxy+S24', displayOrder: 1, isPrimary: true, createdAt: '2024-01-01' }]
+      },
+      {
+        id: 3,
+        sku: 'NIKE-AIR-MAX',
+        name: 'Nike Air Max 270',
+        description: 'Comfortable running shoes with Max Air cushioning',
+        price: 149.99,
+        category: categories[1],
+        brand: 'Nike',
+        isActive: true,
+        createdAt: '2024-01-01',
+        updatedAt: '2024-01-01',
+        inventory: { productId: 3, quantityAvailable: 100, quantityReserved: 10, reorderLevel: 20, lastUpdated: '2024-01-01', isInStock: true, isLowStock: false },
+        images: [{ id: 3, imageUrl: 'https://via.placeholder.com/300x300/dc3545/ffffff?text=Nike+Air+Max', displayOrder: 1, isPrimary: true, createdAt: '2024-01-01' }]
+      },
+      {
+        id: 4,
+        sku: 'SONY-WH1000XM5',
+        name: 'Sony WH-1000XM5 Headphones',
+        description: 'Industry-leading noise canceling wireless headphones',
+        price: 399.99,
+        category: categories[0],
+        brand: 'Sony',
+        isActive: true,
+        createdAt: '2024-01-01',
+        updatedAt: '2024-01-01',
+        inventory: { productId: 4, quantityAvailable: 25, quantityReserved: 2, reorderLevel: 10, lastUpdated: '2024-01-01', isInStock: true, isLowStock: false },
+        images: [{ id: 4, imageUrl: 'https://via.placeholder.com/300x300/6f42c1/ffffff?text=Sony+Headphones', displayOrder: 1, isPrimary: true, createdAt: '2024-01-01' }]
+      },
+      {
+        id: 5,
+        sku: 'ADIDAS-ULTRA',
+        name: 'Adidas Ultraboost 22',
+        description: 'High-performance running shoes with Boost midsole',
+        price: 189.99,
+        category: categories[1],
+        brand: 'Adidas',
+        isActive: true,
+        createdAt: '2024-01-01',
+        updatedAt: '2024-01-01',
+        inventory: { productId: 5, quantityAvailable: 75, quantityReserved: 8, reorderLevel: 15, lastUpdated: '2024-01-01', isInStock: true, isLowStock: false },
+        images: [{ id: 5, imageUrl: 'https://via.placeholder.com/300x300/fd7e14/ffffff?text=Adidas+Ultra', displayOrder: 1, isPrimary: true, createdAt: '2024-01-01' }]
+      },
+      {
+        id: 6,
+        sku: 'DELL-XPS13',
+        name: 'Dell XPS 13 Laptop',
+        description: '13-inch premium laptop with Intel Core i7 and 16GB RAM',
+        price: 1299.99,
+        category: categories[0],
+        brand: 'Dell',
+        isActive: true,
+        createdAt: '2024-01-01',
+        updatedAt: '2024-01-01',
+        inventory: { productId: 6, quantityAvailable: 15, quantityReserved: 1, reorderLevel: 20, lastUpdated: '2024-01-01', isInStock: true, isLowStock: true },
+        images: [{ id: 6, imageUrl: 'https://via.placeholder.com/300x300/17a2b8/ffffff?text=Dell+XPS+13', displayOrder: 1, isPrimary: true, createdAt: '2024-01-01' }]
+      }
+    ];
+  }
+
+  private filterMockProducts(products: Product[], searchRequest: ProductSearchRequest): Product[] {
+    let filtered = [...products];
+
+    // Filter by search term
+    if (searchRequest.searchTerm) {
+      const term = searchRequest.searchTerm.toLowerCase();
+      filtered = filtered.filter(p => 
+        p.name.toLowerCase().includes(term) || 
+        p.description?.toLowerCase().includes(term) ||
+        p.brand?.toLowerCase().includes(term)
+      );
+    }
+
+    // Filter by category
+    if (searchRequest.categoryIds && searchRequest.categoryIds.length > 0) {
+      filtered = filtered.filter(p => searchRequest.categoryIds!.includes(p.category.id));
+    }
+
+    // Filter by brand
+    if (searchRequest.brands && searchRequest.brands.length > 0) {
+      filtered = filtered.filter(p => p.brand && searchRequest.brands!.includes(p.brand));
+    }
+
+    // Filter by price range
+    if (searchRequest.minPrice !== undefined) {
+      filtered = filtered.filter(p => p.price >= searchRequest.minPrice!);
+    }
+    if (searchRequest.maxPrice !== undefined) {
+      filtered = filtered.filter(p => p.price <= searchRequest.maxPrice!);
+    }
+
+    // Filter by stock
+    if (searchRequest.inStockOnly) {
+      filtered = filtered.filter(p => p.inventory?.isInStock);
+    }
+
+    // Sort products
+    if (searchRequest.sortBy) {
+      filtered.sort((a, b) => {
+        let aValue: any, bValue: any;
+        
+        switch (searchRequest.sortBy) {
+          case 'name':
+            aValue = a.name;
+            bValue = b.name;
+            break;
+          case 'price':
+            aValue = a.price;
+            bValue = b.price;
+            break;
+          case 'createdAt':
+            aValue = new Date(a.createdAt);
+            bValue = new Date(b.createdAt);
+            break;
+          default:
+            return 0;
+        }
+
+        if (searchRequest.sortDirection === 'desc') {
+          return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
+        } else {
+          return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
+        }
+      });
+    }
+
+    return filtered;
   }
 
   searchProductsWithParams(searchRequest: ProductSearchRequest): Observable<ProductSearchResponse> {
@@ -143,11 +345,12 @@ export class ProductService {
 
   // Category operations
   getAllCategories(): Observable<Category[]> {
-    return this.http.get<Category[]>(this.CATEGORY_API_URL)
-      .pipe(
-        tap(categories => this.categoriesSubject.next(categories)),
-        catchError(this.handleError)
-      );
+    // Return mock data for development
+    return new Observable(observer => {
+      const categories = this.categoriesSubject.value;
+      observer.next(categories);
+      observer.complete();
+    });
   }
 
   getRootCategories(): Observable<Category[]> {
@@ -171,8 +374,12 @@ export class ProductService {
   }
 
   getCategoriesWithProducts(): Observable<Category[]> {
-    return this.http.get<Category[]>(`${this.CATEGORY_API_URL}/with-products`)
-      .pipe(catchError(this.handleError));
+    // Return mock data for development
+    return new Observable(observer => {
+      const categories = this.categoriesSubject.value;
+      observer.next(categories);
+      observer.complete();
+    });
   }
 
   searchCategories(name: string): Observable<Category[]> {
@@ -183,24 +390,33 @@ export class ProductService {
 
   // Filter data operations
   getAvailableBrands(): Observable<string[]> {
-    return this.http.get<string[]>(`${this.API_URL}/brands`)
-      .pipe(
-        tap(brands => this.brandsSubject.next(brands)),
-        catchError(this.handleError)
-      );
+    // Return mock data for development
+    return new Observable(observer => {
+      const brands = this.brandsSubject.value;
+      observer.next(brands);
+      observer.complete();
+    });
   }
 
   getPriceRange(): Observable<PriceRange> {
-    return this.http.get<PriceRange>(`${this.API_URL}/price-range`)
-      .pipe(
-        tap(priceRange => this.priceRangeSubject.next(priceRange)),
-        catchError(this.handleError)
-      );
+    // Return mock data for development
+    return new Observable(observer => {
+      const priceRange = this.priceRangeSubject.value || { minPrice: 10, maxPrice: 2000 };
+      observer.next(priceRange);
+      observer.complete();
+    });
   }
 
   getProductCountByCategory(categoryId: number): Observable<{ count: number }> {
-    return this.http.get<{ count: number }>(`${this.API_URL}/category/${categoryId}/count`)
-      .pipe(catchError(this.handleError));
+    // Return mock data for development
+    return new Observable(observer => {
+      setTimeout(() => {
+        const mockProducts = this.generateMockProducts();
+        const count = mockProducts.filter(p => p.category.id === categoryId).length;
+        observer.next({ count });
+        observer.complete();
+      }, 100);
+    });
   }
 
   // Cache management

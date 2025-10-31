@@ -14,7 +14,10 @@ import { OrderDetailComponent } from './components/order-detail/order-detail.com
     CommonModule,
     ReactiveFormsModule,
     FormsModule,
-    HttpClientModule,
+    CheckoutComponent,
+    OrderConfirmationComponent,
+    OrderHistoryComponent,
+    OrderDetailComponent,
     RouterModule.forChild([
       {
         path: '',
@@ -37,18 +40,6 @@ import { OrderDetailComponent } from './components/order-detail/order-detail.com
         data: { title: 'Order Details' }
       }
     ])
-  ],
-  declarations: [
-    CheckoutComponent,
-    OrderConfirmationComponent,
-    OrderHistoryComponent,
-    OrderDetailComponent
-  ],
-  exports: [
-    CheckoutComponent,
-    OrderConfirmationComponent,
-    OrderHistoryComponent,
-    OrderDetailComponent
   ]
 })
 export class OrderModule { }

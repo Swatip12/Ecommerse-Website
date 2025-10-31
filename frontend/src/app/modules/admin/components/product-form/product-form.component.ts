@@ -100,11 +100,11 @@ export class ProductFormComponent implements OnInit {
   }
 
   private loadCategories(): void {
-    this.productService.getCategories().subscribe({
-      next: (categories) => {
+    this.productService.getCategoriesWithProducts().subscribe({
+      next: (categories: any) => {
         this.categories = categories;
       },
-      error: (error) => {
+      error: (error: any) => {
         console.error('Error loading categories:', error);
         this.snackBar.open('Error loading categories', 'Close', { duration: 3000 });
       }

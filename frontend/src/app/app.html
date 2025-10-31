@@ -1,33 +1,29 @@
-<!-- Main Application Layout -->
+<!-- Main Ecommerce Website Layout -->
 <div class="app-container">
   <!-- Navigation Header -->
   <header class="app-header">
     <nav class="navbar">
       <div class="nav-brand">
         <a routerLink="/dashboard" class="brand-link">
-          <h1>ECommerce</h1>
+          <h1>🛒 ShopEasy</h1>
         </a>
       </div>
       
       <div class="nav-menu">
-        <a routerLink="/products" routerLinkActive="active" class="nav-link">Products</a>
-        <a routerLink="/cart" routerLinkActive="active" class="nav-link">
-          Cart
-          <app-cart-icon></app-cart-icon>
-        </a>
-        <a routerLink="/orders" routerLinkActive="active" class="nav-link">Orders</a>
-        <a routerLink="/profile" routerLinkActive="active" class="nav-link">Profile</a>
-        <a routerLink="/admin" routerLinkActive="active" class="nav-link admin-link">Admin</a>
+        <a routerLink="/dashboard" class="nav-link">Home</a>
+        <a routerLink="/products" class="nav-link">Products</a>
+        <a routerLink="/cart" class="nav-link">Cart</a>
+        <a routerLink="/orders" class="nav-link">My Orders</a>
+        <a routerLink="/admin" class="nav-link admin-link">Admin</a>
       </div>
       
       <div class="nav-actions">
-        <button class="auth-button" (click)="logout()">Logout</button>
+        <button class="auth-button" onclick="window.location.href='/login'">Login</button>
+        <button class="auth-button register" onclick="window.location.href='/register'">Sign Up</button>
+        <button class="auth-button admin" onclick="window.location.href='/admin-register'">Admin</button>
       </div>
     </nav>
   </header>
-
-  <!-- Notification Panel -->
-  <app-notification-panel></app-notification-panel>
 
   <!-- Main Content Area -->
   <main class="main-content">
@@ -37,10 +33,7 @@
   <!-- Footer -->
   <footer class="app-footer">
     <div class="footer-content">
-      <p>&copy; 2024 ECommerce Platform. All rights reserved.</p>
+      <p>&copy; 2024 ShopEasy - Your Premier Online Shopping Destination</p>
     </div>
   </footer>
 </div>
-
-
-<router-outlet />

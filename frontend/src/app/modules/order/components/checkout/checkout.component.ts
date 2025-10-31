@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { CommonModule } from '@angular/common';
+import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Subject, takeUntil, combineLatest } from 'rxjs';
 import { OrderService } from '../../services/order.service';
@@ -16,6 +17,8 @@ import { CartItem } from '../../../cart/models/cart.models';
 
 @Component({
   selector: 'app-checkout',
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule, FormsModule],
   templateUrl: './checkout.component.html',
   styleUrls: ['./checkout.component.scss']
 })
@@ -230,7 +233,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     }
   }
 
-  private isStepValid(step: number): boolean {
+  isStepValid(step: number): boolean {
     switch (step) {
       case 1: // Shipping Address
         return this.checkoutForm.get('shippingAddress')?.valid || false;

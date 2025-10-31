@@ -138,15 +138,11 @@ import { ProductService } from '../../services/product.service';
           </p>
         </div>
 
-        <!-- Products Grid with Virtual Scrolling -->
+        <!-- Products Grid -->
         <div class="products-grid" *ngIf="products.length > 0">
-          <cdk-virtual-scroll-viewport 
-            itemSize="320" 
-            class="virtual-scroll-viewport"
-            *ngIf="useVirtualScrolling && products.length > 50; else regularGrid"
-          >
+          <!-- Simple Grid Template -->
             <div 
-              *cdkVirtualFor="let product of products; trackBy: trackByProductId" 
+              *ngFor="let product of products; trackBy: trackByProductId" 
               class="product-card"
               (click)="onProductClick(product)"
             >
@@ -199,7 +195,6 @@ import { ProductService } from '../../services/product.service';
                 View Details
               </button>
             </div>
-          </cdk-virtual-scroll-viewport>
           
           <!-- Regular Grid Template -->
           <ng-template #regularGrid>

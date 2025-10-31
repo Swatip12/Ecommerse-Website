@@ -1,12 +1,36 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatBadgeModule } from '@angular/material/badge';
 import { CartStoreService } from '../../services/cart-store.service';
 import { CartSummary, CartItem, UpdateCartItemRequest } from '../../models/cart.models';
 
 @Component({
   selector: 'app-cart',
+  standalone: true,
+  imports: [
+    CommonModule, 
+    ReactiveFormsModule, 
+    FormsModule,
+    MatButtonModule,
+    MatCardModule,
+    MatIconModule,
+    MatInputModule,
+    MatProgressSpinnerModule,
+    MatProgressBarModule,
+    MatDividerModule,
+    MatBadgeModule
+  ],
   templateUrl: './cart.component.html',
   styleUrls: ['./cart.component.scss']
 })

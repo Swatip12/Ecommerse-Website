@@ -1,4 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { OrderService } from '../../services/order.service';
@@ -6,6 +8,8 @@ import { Order, OrderStatusHistory, UpdateOrderStatusRequest, OrderStatus } from
 
 @Component({
   selector: 'app-order-detail',
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule, FormsModule],
   templateUrl: './order-detail.component.html',
   styleUrls: ['./order-detail.component.scss']
 })

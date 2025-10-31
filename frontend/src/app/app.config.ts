@@ -4,10 +4,10 @@ import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http'
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
 
-// NgRx
-import { provideStore } from '@ngrx/store';
-import { provideEffects } from '@ngrx/effects';
-import { provideStoreDevtools } from '@ngrx/store-devtools';
+// NgRx - Temporarily disabled for debugging
+// import { provideStore } from '@ngrx/store';
+// import { provideEffects } from '@ngrx/effects';
+// import { provideStoreDevtools } from '@ngrx/store-devtools';
 
 import { routes } from './app.routes';
 import { JwtInterceptor } from './modules/user/interceptors/jwt.interceptor';
@@ -21,15 +21,18 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     provideHttpClient(withInterceptorsFromDi()),
     provideAnimationsAsync(),
-    provideStore(),
-    provideEffects(),
-    provideStoreDevtools({
-      maxAge: 25,
-      logOnly: !isDevMode(),
-      autoPause: true,
-      trace: false,
-      traceLimit: 75
-    }),
+    // NgRx temporarily disabled for debugging
+    // provideStore({
+    //   cart: cartReducer
+    // }),
+    // provideEffects([CartEffects]),
+    // provideStoreDevtools({
+    //   maxAge: 25,
+    //   logOnly: !isDevMode(),
+    //   autoPause: true,
+    //   trace: false,
+    //   traceLimit: 75
+    // }),
     {
       provide: HTTP_INTERCEPTORS,
       useClass: JwtInterceptor,

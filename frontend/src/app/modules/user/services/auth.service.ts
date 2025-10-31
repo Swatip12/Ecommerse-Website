@@ -152,6 +152,11 @@ export class AuthService {
   }
 
   private hasValidToken(): boolean {
+    // For development mode, always return true to bypass authentication
+    if (this.isDevelopmentMode()) {
+      return true;
+    }
+    
     const token = this.getAccessToken();
     if (!token) return false;
     
@@ -164,7 +169,27 @@ export class AuthService {
     }
   }
 
+  private isDevelopmentMode(): boolean {
+    // Check if we're in development mode (no backend available)
+    return !navigator.onLine || window.location.hostname === 'localhost';
+  }
+
   private getUserFromStorage(): User | null {
+    // For development mode, return a mock user
+    if (this.isDevelopmentMode()) {
+      return {
+        id: 1,
+        email: 'demo@example.com',
+        firstName: 'Demo',
+        lastName: 'User',
+        role: UserRole.CUSTOMER,
+        isActive: true,
+        emailVerified: true,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+    }
+    
     const userData = localStorage.getItem(this.USER_KEY);
     if (userData) {
       try {
@@ -182,6 +207,10 @@ export class AuthService {
   }
 
   isAuthenticated(): boolean {
+    // For development mode, always return true
+    if (this.isDevelopmentMode()) {
+      return true;
+    }
     return this.isAuthenticatedSubject.value;
   }
 

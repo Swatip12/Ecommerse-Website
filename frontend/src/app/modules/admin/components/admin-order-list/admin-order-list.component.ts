@@ -15,6 +15,7 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialogModule, MatDialog } from '@angular/material/dialog';
+import { MatCardModule } from '@angular/material/card';
 
 import { AdminOrderService, OrderFilters } from '../../services/admin-order.service';
 import { Order, OrderStatus, PagedResponse } from '../../../order/models/order.models';
@@ -40,7 +41,8 @@ import { OrderManagementComponent } from '../order-management/order-management.c
     MatNativeDateModule,
     MatProgressSpinnerModule,
     MatSnackBarModule,
-    MatDialogModule
+    MatDialogModule,
+    MatCardModule
   ],
   templateUrl: './admin-order-list.component.html',
   styleUrls: ['./admin-order-list.component.scss']

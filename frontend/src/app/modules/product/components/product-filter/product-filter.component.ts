@@ -47,7 +47,7 @@ import { ProductService } from '../../services/product.service';
           <!-- Category Tags -->
           <div 
             class="filter-tag" 
-            *ngFor="let categoryId of selectedCategoryIds; trackBy: trackByCategoryId"
+            *ngFor="let categoryId of selectedCategoryIds; trackBy: trackById"
           >
             <span>{{ getCategoryName(categoryId) }}</span>
             <button (click)="removeCategory(categoryId)">
@@ -119,6 +119,7 @@ import { ProductService } from '../../services/product.service';
                 type="text" 
                 placeholder="Search categories..."
                 [(ngModel)]="categorySearchTerm"
+                [ngModelOptions]="{standalone: true}"
                 (input)="onCategorySearch($event)"
                 class="category-search-input"
               >
@@ -159,6 +160,7 @@ import { ProductService } from '../../services/product.service';
                 type="text" 
                 placeholder="Search brands..."
                 [(ngModel)]="brandSearchTerm"
+                [ngModelOptions]="{standalone: true}"
                 (input)="onBrandSearch($event)"
                 class="brand-search-input"
               >
@@ -619,6 +621,10 @@ export class ProductFilterComponent implements OnInit, OnDestroy {
 
   trackByCategoryId(index: number, category: Category): number {
     return category.id;
+  }
+
+  trackById(index: number, id: number): number {
+    return id;
   }
 
   trackByBrand(index: number, brand: string): string {

@@ -15,6 +15,9 @@ import { UserManagement, CreateUserRequest, UpdateUserRequest } from '../../mode
 export class UserManagementComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
   
+  // Make Math available in template
+  Math = Math;
+  
   users: UserManagement[] = [];
   totalUsers = 0;
   currentPage = 0;

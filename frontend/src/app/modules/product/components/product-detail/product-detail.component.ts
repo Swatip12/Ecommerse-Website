@@ -80,7 +80,7 @@ import { ProductService } from '../../services/product.service';
                 <span>{{ getStockStatusText() }}</span>
               </div>
               <p class="stock-quantity" *ngIf="product.inventory?.isInStock">
-                {{ product.inventory.quantityAvailable }} in stock
+                {{ product.inventory?.quantityAvailable }} in stock
               </p>
             </div>
           </div>
@@ -126,7 +126,7 @@ import { ProductService } from '../../services/product.service';
                   type="number" 
                   [(ngModel)]="selectedQuantity"
                   [min]="1"
-                  [max]="product.inventory.quantityAvailable"
+                  [max]="product.inventory?.quantityAvailable || 1"
                   class="quantity-input"
                   (change)="validateQuantity()"
                 >
@@ -134,7 +134,7 @@ import { ProductService } from '../../services/product.service';
                   type="button" 
                   class="quantity-btn"
                   (click)="increaseQuantity()"
-                  [disabled]="selectedQuantity >= product.inventory.quantityAvailable"
+                  [disabled]="selectedQuantity >= (product.inventory?.quantityAvailable || 0)"
                 >
                   +
                 </button>
@@ -316,8 +316,8 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
 
     if (this.selectedQuantity < 1) {
       this.selectedQuantity = 1;
-    } else if (this.selectedQuantity > this.product.inventory.quantityAvailable) {
-      this.selectedQuantity = this.product.inventory.quantityAvailable;
+    } else if (this.selectedQuantity > (this.product.inventory?.quantityAvailable || 0)) {
+      this.selectedQuantity = this.product.inventory?.quantityAvailable || 1;
     }
   }
 

@@ -182,7 +182,7 @@
   <div class="pagination-info" *ngIf="!isLoading && !error && orders.length > 0">
     <p>
       Showing {{ currentPage * pageSize + 1 }} to 
-      {{ Math.min((currentPage + 1) * pageSize, totalElements) }} of 
+      {{ getEndIndex() }} of 
       {{ totalElements }} orders
     </p>
   </div>

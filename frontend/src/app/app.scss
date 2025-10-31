@@ -81,6 +81,9 @@
 }
 
 .nav-actions {
+  display: flex;
+  gap: 10px;
+  
   .auth-button {
     background-color: #3498db;
     color: white;
@@ -89,10 +92,28 @@
     border-radius: 4px;
     cursor: pointer;
     font-weight: 500;
-    transition: background-color 0.3s ease;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
     
     &:hover {
       background-color: #2980b9;
+      transform: translateY(-1px);
+    }
+    
+    &.register {
+      background-color: #28a745;
+      
+      &:hover {
+        background-color: #218838;
+      }
+    }
+    
+    &.admin {
+      background-color: #dc3545;
+      
+      &:hover {
+        background-color: #c82333;
+      }
     }
   }
 }

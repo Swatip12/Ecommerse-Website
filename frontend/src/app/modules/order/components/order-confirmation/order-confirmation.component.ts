@@ -1,4 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { OrderService } from '../../services/order.service';
@@ -6,6 +8,8 @@ import { Order } from '../../models/order.models';
 
 @Component({
   selector: 'app-order-confirmation',
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule, FormsModule],
   templateUrl: './order-confirmation.component.html',
   styleUrls: ['./order-confirmation.component.scss']
 })

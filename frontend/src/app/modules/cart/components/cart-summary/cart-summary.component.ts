@@ -1,11 +1,26 @@
 import { Component, OnInit, OnDestroy, Input, Output, EventEmitter } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MatIconModule } from '@angular/material/icon';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { CartStoreService } from '../../services/cart-store.service';
 import { CartSummary } from '../../models/cart.models';
 
 @Component({
   selector: 'app-cart-summary',
+  standalone: true,
+  imports: [
+    CommonModule,
+    MatButtonModule,
+    MatCardModule,
+    MatIconModule,
+    MatDividerModule,
+    MatProgressBarModule
+  ],
   templateUrl: './cart-summary.component.html',
   styleUrls: ['./cart-summary.component.scss']
 })
